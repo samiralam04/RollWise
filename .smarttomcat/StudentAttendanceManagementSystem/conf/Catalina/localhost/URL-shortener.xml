@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Context docBase="/Users/samiralam/project/TinyUrl/src/main/webapp">
+  <Resources cacheMaxSize="10240">
+    <PreResources base="/Users/samiralam/project/TinyUrl/target/classes" className="org.apache.catalina.webresources.DirResourceSet" webAppMount="/WEB-INF/classes"/>
+    <PostResources base="/Users/samiralam/.m2/repository/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/postgresql-42.7.3.jar"/>
+    <PostResources base="/Users/samiralam/.m2/repository/org/checkerframework/checker-qual/3.42.0/checker-qual-3.42.0.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/checker-qual-3.42.0.jar"/>
+    <PostResources base="/Users/samiralam/.m2/repository/commons-codec/commons-codec/1.15/commons-codec-1.15.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/commons-codec-1.15.jar"/>
+  </Resources>
+</Context>
