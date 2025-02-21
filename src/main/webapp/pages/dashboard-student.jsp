@@ -68,7 +68,7 @@
                     <p>Attendance Percentage: <strong><%= String.format("%.2f", attendancePercentage) %>%</strong></p>
 
                     <% if (attendancePercentage < 75) { %>
-                        <p class="text-danger"><strong>⚠ Warning:</strong> Your attendance is below 75%! Please attend more classes.</p>
+                        <p class="text-danger"><strong>⚠ Warning:</strong> Your attendance is below 75%! Please attend classes.</p>
                     <% } else if (attendancePercentage >= 75 && attendancePercentage <= 78) { %>
                         <p class="text-warning"><strong>⚠ Alert:</strong> Your attendance is nearing 75%! Maintain regular attendance.</p>
                     <% } %>
