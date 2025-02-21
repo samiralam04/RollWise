@@ -2,8 +2,8 @@
 <%@ page session="true" %>
 <%@ page import="java.sql.*, java.util.*" %>
 <%
-    String adminEmail = (String) session.getAttribute("email");
-    if (session.getAttribute("email") == null) {
+    String adminName = (String) session.getAttribute("username");
+    if (session.getAttribute("username") == null) {
         response.sendRedirect("login.jsp");
         return;
     }
@@ -48,7 +48,7 @@
 
         <!-- Main Content -->
         <div class="container-fluid p-4">
-            <h2>Welcome, <%= adminEmail %>!</h2>
+            <h2>Welcome, <%= adminName %> 🙂</h2>
             <div class="row">
                 <div class="col-md-4">
                     <div class="card shadow-sm p-3 text-center">
