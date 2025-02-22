@@ -89,6 +89,14 @@
       <version>4.4</version>
     </dependency>
 
+    <!-- Password hashing -->
+    <dependency>
+      <groupId>org.mindrot</groupId>
+      <artifactId>jbcrypt</artifactId>
+      <version>0.4</version>
+    </dependency>
+
+
     <!-- Fixed: JSON Processing -->
     <dependency>
       <groupId>org.json</groupId>

@@ -3,19 +3,26 @@
 <%@ page import="java.sql.*, java.util.*" %>
 
 <%
-    String userType = (String) session.getAttribute("userType");
-    String userEmail = (String) session.getAttribute("userEmail");
+    String adminName = (String) session.getAttribute("username");
+    String userType = (String) session.getAttribute("userType"); // Fetch user type from session
 
-    if (userEmail == null) {
+    if (adminName == null) {
         response.sendRedirect("login.jsp");
         return;
     }
 
-    Connection conn = (Connection) application.getAttribute("DBConnection");
+    Connection con = null;
+    PreparedStatement ps = null;
+    ResultSet rs = null;
 
-    // Fetching existing holidays
-    PreparedStatement ps = conn.prepareStatement("SELECT * FROM holidays ORDER BY holiday_date DESC");
-    ResultSet rs = ps.executeQuery();
+    try {
+        // Get database connection
+        con = com.attendance.util.DBConnection.getConnection();
+
+        // Fetch holidays (Corrected Query)
+        String query = "SELECT reason, date FROM holiday";
+        ps = con.prepareStatement(query);
+        rs = ps.executeQuery();
 %>
 
 <!DOCTYPE html>
@@ -37,8 +44,8 @@
             <h4>Add New Holiday</h4>
             <form action="HolidayServlet" method="post">
                 <div class="mb-2">
-                    <label>Holiday Name</label>
-                    <input type="text" name="holidayName" class="form-control" placeholder="e.g., Diwali, Christmas" required>
+                    <label>Holiday Reason</label>
+                    <input type="text" name="holidayReason" class="form-control" placeholder="e.g., Diwali, Christmas" required>
                 </div>
                 <div class="mb-2">
                     <label>Date</label>
@@ -55,17 +62,17 @@
             <table class="table table-bordered">
                 <thead>
                     <tr>
-                        <th>Holiday Name</th>
+                        <th>Holiday Reason</th>
                         <th>Date</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% while (rs.next()) { %>
                     <tr>
-                        <td><%= rs.getString("name") %></td>
-                        <td><%= rs.getString("holiday_date") %></td>
+                        <td><%= rs.getString("reason") %></td>
+                        <td><%= rs.getDate("date") %></td>
                     </tr>
-                    <% } rs.close(); ps.close(); %>
+                    <% } %>
                 </tbody>
             </table>
         </div>
@@ -78,3 +85,14 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
+<%
+    } catch (Exception e) {
+        e.printStackTrace();
+    } finally {
+        // Close resources
+        if (rs != null) rs.close();
+        if (ps != null) ps.close();
+        if (con != null) con.close();
+    }
+%>
