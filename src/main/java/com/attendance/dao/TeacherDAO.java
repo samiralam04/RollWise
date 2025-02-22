@@ -11,19 +11,18 @@ public class TeacherDAO {
 
     // Add a new teacher
     public boolean addTeacher(Teacher teacher) {
-        String query = "INSERT INTO teacher (name, email, phone, subject, username, password) VALUES (?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO users (name, email, phone, subject, username, password, role) VALUES (?, ?, ?, ?, ?, ?, 'teacher')";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, teacher.getName());
             stmt.setString(2, teacher.getEmail());
-            stmt.setString(3, teacher.getPhone());
-            stmt.setString(4, teacher.getSubject());
+            stmt.setString(3, teacher.getPhone().orElse(null));
+            stmt.setString(4, teacher.getSubject().orElse(null));
             stmt.setString(5, teacher.getUsername());
             stmt.setString(6, teacher.getPassword());
 
-            int rowsInserted = stmt.executeUpdate();
-            return rowsInserted > 0;
+            return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -33,14 +32,16 @@ public class TeacherDAO {
     // Get all teachers
     public List<Teacher> getAllTeachers() {
         List<Teacher> teachers = new ArrayList<>();
-        String query = "SELECT * FROM teacher ORDER BY name";
+        String query = "SELECT * FROM users WHERE role = 'teacher' ORDER BY name";
+        System.out.println("Executing query: " + query);
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                Teacher teacher = new Teacher(
+                System.out.println("Found teacher: " + rs.getString("username")); // Debug log
+                teachers.add(new Teacher(
                         rs.getInt("id"),
                         rs.getString("name"),
                         rs.getString("email"),
@@ -48,8 +49,7 @@ public class TeacherDAO {
                         rs.getString("subject"),
                         rs.getString("username"),
                         rs.getString("password")
-                );
-                teachers.add(teacher);
+                ));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -57,25 +57,26 @@ public class TeacherDAO {
         return teachers;
     }
 
+
     // Get a teacher by username
     public Teacher getTeacherByUsername(String username) {
-        String query = "SELECT * FROM teacher WHERE username = ?";
+        String query = "SELECT * FROM users WHERE username = ? AND role = 'teacher'";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, username);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return new Teacher(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("email"),
-                        rs.getString("phone"),
-                        rs.getString("subject"),
-                        rs.getString("username"),
-                        rs.getString("password")
-                );
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Teacher(
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getString("email"),
+                            rs.getString("phone"),
+                            rs.getString("subject"),
+                            rs.getString("username"),
+                            rs.getString("password")
+                    );
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -85,23 +86,23 @@ public class TeacherDAO {
 
     // Get a teacher by ID
     public Teacher getTeacherById(int id) {
-        String query = "SELECT * FROM teacher WHERE id = ?";
+        String query = "SELECT * FROM users WHERE id = ? AND role = 'teacher'";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return new Teacher(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("email"),
-                        rs.getString("phone"),
-                        rs.getString("subject"),
-                        rs.getString("username"),
-                        rs.getString("password")
-                );
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Teacher(
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getString("email"),
+                            rs.getString("phone"),
+                            rs.getString("subject"),
+                            rs.getString("username"),
+                            rs.getString("password")
+                    );
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -109,18 +110,18 @@ public class TeacherDAO {
         return null;
     }
 
-    // Validate teacher credentials (for login)
+    // Validate teacher credentials
     public boolean validateTeacher(String email, String password) {
-        String query = "SELECT COUNT(*) FROM teacher WHERE email = ? AND password = ?";
+        String query = "SELECT EXISTS (SELECT 1 FROM users WHERE email = ? AND password = ? AND role = 'teacher')";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, email);
             stmt.setString(2, password);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt(1) > 0;  // If count > 0, teacher exists
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean(1);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -128,42 +129,37 @@ public class TeacherDAO {
         return false;
     }
 
-
     // Update teacher details
     public boolean updateTeacher(Teacher teacher) {
-        String query = "UPDATE teacher SET name=?, email=?, phone=?, subject=?, password=? WHERE username=?";
+        String query = "UPDATE users SET name=?, email=?, phone=?, subject=?, password=? WHERE username=? AND role = 'teacher'";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, teacher.getName());
             stmt.setString(2, teacher.getEmail());
-            stmt.setString(3, teacher.getPhone());
-            stmt.setString(4, teacher.getSubject());
+            stmt.setString(3, teacher.getPhone().orElse(null));
+            stmt.setString(4, teacher.getSubject().orElse(null));
             stmt.setString(5, teacher.getPassword());
             stmt.setString(6, teacher.getUsername());
 
-            int rowsUpdated = stmt.executeUpdate();
-            return rowsUpdated > 0;
+            return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
     }
 
-    // Delete a teacher by username
-    public boolean deleteTeacher(int teacherId) {  // Now accepts int
-        String query = "DELETE FROM teacher WHERE id = ?";  // Ensure 'id' column exists in DB
+    // Delete a teacher by ID
+    public boolean deleteTeacher(int teacherId) {
+        String query = "DELETE FROM users WHERE id = ? AND role = 'teacher'";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            stmt.setInt(1, teacherId);  // Set ID as an integer
-            int rowsDeleted = stmt.executeUpdate();
-            return rowsDeleted > 0;
+            stmt.setInt(1, teacherId);
+            return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
     }
-
 }
-
