@@ -22,6 +22,11 @@ public class Teacher {
         this.password = password;
     }
 
+    // ✅ Constructor with (id, name, email, phone, subject, username) [NEWLY ADDED]
+    public Teacher(int id, String name, String email, String phone, String subject, String username) {
+        this(id, name, email, phone, subject, username, null); // Password set as null
+    }
+
     // ✅ Constructor with (id, name, email, subject)
     public Teacher(int id, String name, String email, String subject) {
         this(id, name, email, null, subject, null, null);

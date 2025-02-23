@@ -11,7 +11,7 @@ public class TeacherDAO {
 
     // Add a new teacher
     public boolean addTeacher(Teacher teacher) {
-        String query = "INSERT INTO users (name, email, phone, subject, username, password, role) VALUES (?, ?, ?, ?, ?, ?, 'teacher')";
+        String query = "INSERT INTO teacher (name, email, phone, subject, username, password) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
@@ -29,18 +29,16 @@ public class TeacherDAO {
         return false;
     }
 
+
     // Get all teachers
     public List<Teacher> getAllTeachers() {
         List<Teacher> teachers = new ArrayList<>();
-        String query = "SELECT * FROM users WHERE role = 'teacher' ORDER BY name";
-        System.out.println("Executing query: " + query);
-
+        String query = "SELECT * FROM teacher ORDER BY name";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                System.out.println("Found teacher: " + rs.getString("username")); // Debug log
                 teachers.add(new Teacher(
                         rs.getInt("id"),
                         rs.getString("name"),
@@ -56,7 +54,6 @@ public class TeacherDAO {
         }
         return teachers;
     }
-
 
     // Get a teacher by username
     public Teacher getTeacherByUsername(String username) {

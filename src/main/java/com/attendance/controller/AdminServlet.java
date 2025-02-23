@@ -123,14 +123,14 @@ public class AdminServlet extends HttpServlet {
         List<String> holidays = new ArrayList<>();
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM holidays");
+             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM holiday");
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 holidays.add(rs.getString("date") + " - " + rs.getString("reason"));
             }
             request.setAttribute("holidays", holidays);
-            request.getRequestDispatcher("/pages/admin-holidays.jsp").forward(request, response);
+            request.getRequestDispatcher("/pages/holiday.jsp").forward(request, response);
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -143,7 +143,7 @@ public class AdminServlet extends HttpServlet {
         String reason = request.getParameter("reason");
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("INSERT INTO holidays (date, reason) VALUES (?, ?)")) {
+             PreparedStatement stmt = conn.prepareStatement("INSERT INTO holiday (date, reason) VALUES (?, ?)")) {
 
             stmt.setString(1, date);
             stmt.setString(2, reason);
@@ -161,7 +161,7 @@ public class AdminServlet extends HttpServlet {
         String reason = request.getParameter("reason");
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("INSERT INTO holidays (date, reason) VALUES (CURRENT_DATE, ?)")) {
+             PreparedStatement stmt = conn.prepareStatement("INSERT INTO holiday (date, reason) VALUES (CURRENT_DATE, ?)")) {
 
             stmt.setString(1, "Emergency: " + reason);
             stmt.executeUpdate();

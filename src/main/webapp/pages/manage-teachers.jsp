@@ -23,15 +23,14 @@
         <h2>Manage Teachers</h2>
 
         <!-- Add Teacher Form -->
-        <form action="/teacher" method="post">
-            <input type="hidden" name="action" value="add">
-            <label>Name:</label> <input type="text" name="name" required>
-            <label>Email:</label> <input type="email" name="email" required>
-            <label>Phone:</label> <input type="text" name="phone" required>
-            <label>Subject:</label> <input type="text" name="subject" required>
-            <label>Username:</label> <input type="text" name="username" required>
-            <label>Password:</label> <input type="password" name="password" required>
-            <button type="submit">Add Teacher</button>
+        <form action="<%= request.getContextPath() %>/teacher" method="post">
+           <input type="text" name="name" placeholder="Name" required>
+               <input type="email" name="email" placeholder="Email" required>
+               <input type="text" name="phone" placeholder="Phone" required>
+               <input type="text" name="subject" placeholder="Subject" required>
+               <input type="text" name="username" placeholder="Username" required>
+               <input type="password" name="password" placeholder="Password" required>
+               <button type="submit">Add Teacher</button>
         </form>
 
         <hr>
@@ -58,14 +57,14 @@
                     <td><%= teacher.getUsername() %></td>
                     <td>
                         <!-- Edit Button -->
-                        <form action="/teacher" method="get" style="display:inline;">
+                        <form action="<%= request.getContextPath() %>/teacher" method="get" style="display:inline;">
                             <input type="hidden" name="action" value="edit">
                             <input type="hidden" name="id" value="<%= teacher.getId() %>">
                             <button type="submit">Edit</button>
                         </form>
 
                         <!-- Delete Button -->
-                        <form action="/teacher" method="post" style="display:inline;">
+                        <form action="<%= request.getContextPath() %>/teacher" method="post" style="display:inline;">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="<%= teacher.getId() %>">
                             <button type="submit" onclick="return confirm('Are you sure?')">Delete</button>

@@ -5,27 +5,17 @@
 <%
     String userType = (String) session.getAttribute("userType");
     String userEmail = (String) session.getAttribute("userEmail");
-    int studentId = (userType.equals("student")) ? (Integer) session.getAttribute("studentId") : -1;
 
-    if (userEmail == null) {
+    // First, check if the user is logged in
+    if (userEmail == null || userType == null) {
         response.sendRedirect("login.jsp");
         return;
     }
 
-    Connection conn = (Connection) application.getAttribute("DBConnection");
-    PreparedStatement ps = null;
-    ResultSet rs = null;
-
-    // Fetch Attendance Report
-    if (userType.equals("student")) {
-        ps = conn.prepareStatement("SELECT subject, total_classes, attended_classes FROM attendance WHERE student_id = ?");
-        ps.setInt(1, studentId);
-    } else if (userType.equals("admin") || userType.equals("teacher")) {
-        ps = conn.prepareStatement("SELECT s.id, s.name, a.subject, a.total_classes, a.attended_classes FROM attendance a INNER JOIN students s ON a.student_id = s.id ORDER BY s.id");
-    }
-
-    rs = ps.executeQuery();
+    // Only check studentId if userType is not null
+    int studentId = "student".equals(userType) ? (Integer) session.getAttribute("studentId") : -1;
 %>
+
 
 <!DOCTYPE html>
 <html lang="en">
