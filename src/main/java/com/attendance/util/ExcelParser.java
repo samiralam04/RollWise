@@ -2,7 +2,6 @@ package com.attendance.util;
 
 import java.io.InputStream;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.poi.ss.usermodel.*;
@@ -18,32 +17,51 @@ public class ExcelParser {
      */
     public static Map<String, Integer> parseExcel(Part filePart) throws IOException {
         Map<String, Integer> attendanceMap = new LinkedHashMap<>();
+        DataFormatter dataFormatter = new DataFormatter(); // To handle different cell types
+
+        // ✅ Validate file type before processing
+        String fileName = filePart.getSubmittedFileName();
+        if (!fileName.endsWith(".xlsx")) {
+            throw new IllegalArgumentException("Invalid file format. Please upload an Excel (.xlsx) file.");
+        }
 
         try (InputStream fileInputStream = filePart.getInputStream();
              Workbook workbook = new XSSFWorkbook(fileInputStream)) {
 
-            Sheet sheet = workbook.getSheetAt(0); // Assume the first sheet contains attendance data
-            boolean isFirstRow = true; // Skip header row
+            Sheet sheet = workbook.getSheetAt(0); // ✅ First sheet contains attendance data
+            boolean isFirstRow = true;
 
             for (Row row : sheet) {
                 if (isFirstRow) {
                     isFirstRow = false;
+                    continue; // ✅ Skip header row
+                }
+
+                if (row == null || row.getCell(0) == null) {
+                    System.err.println("Skipping empty row...");
+                    continue; // ✅ Skip empty rows
+                }
+
+                // ✅ Read Student ID properly
+                Cell studentIdCell = row.getCell(0);
+                String studentId = (studentIdCell != null) ? dataFormatter.formatCellValue(studentIdCell).trim() : null;
+
+                // ✅ Read Attendance Status (Assume "Present" or "Absent")
+                Cell statusCell = row.getCell(3);
+                String status = (statusCell != null) ? dataFormatter.formatCellValue(statusCell).trim() : "Absent";
+
+                if (studentId == null || studentId.isEmpty()) {
+                    System.err.println("Skipping row: Invalid student ID");
                     continue;
                 }
 
-                // Read Student ID
-                Cell studentIdCell = row.getCell(0);
-                String studentId = studentIdCell != null ? studentIdCell.toString().trim() : null;
-
-                // Read Attendance Status (Assume "Present" or "Absent")
-                Cell statusCell = row.getCell(3);
-                String status = (statusCell != null) ? statusCell.toString().trim() : "Absent";
-
-                if (studentId != null && !studentId.isEmpty()) {
-                    attendanceMap.put(studentId, status.equalsIgnoreCase("Present") ? 1 : 0);
-                }
+                attendanceMap.put(studentId, status.equalsIgnoreCase("Present") ? 1 : 0);
             }
+
+        } catch (Exception e) {
+            System.err.println("Error processing Excel file: " + e.getMessage());
         }
+
         return attendanceMap;
     }
 }

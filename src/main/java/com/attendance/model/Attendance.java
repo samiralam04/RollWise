@@ -1,101 +1,32 @@
 package com.attendance.model;
 
-import java.time.LocalDate;  // ✅ Import LocalDate
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Attendance {
     private int id;
-    private int studentId;  // ✅ Add studentId field
-    private String studentName;  // ✅ Add studentName field
-    private LocalDate date;  // ✅ Add date field
-    private boolean status;  // ✅ Add status field
-    private String subject;
-    private int totalClasses;
-    private int attendedClasses;
-    private boolean isPresent;
+    private int studentId;
+    private LocalDate date;
+    private String status;
+    private LocalDateTime recordedAt;
+    private int teacherId;
 
-    // ✅ Constructor with all fields
-    public Attendance(int id, int studentId, String studentName, LocalDate date, boolean status,
-                      String subject, int totalClasses, int attendedClasses) {
-        this.id = id;
-        this.studentId = studentId;
-        this.studentName = studentName;
-        this.date = date;
-        this.status = status;
-        this.subject = subject;
-        this.totalClasses = totalClasses;
-        this.attendedClasses = attendedClasses;
-    }
+    // Getters and Setters
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    // ✅ Default Constructor (Required for JDBC)
-    public Attendance() {}
+    public int getStudentId() { return studentId; }
+    public void setStudentId(int studentId) { this.studentId = studentId; }
 
-    // ✅ Getter Methods
-    public int getId() {
-        return id;
-    }
+    public LocalDate getDate() { return date; }
+    public void setDate(LocalDate date) { this.date = date; }
 
-    public int getStudentId() {
-        return studentId;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
-    public String getStudentName() {  // ✅ Add getStudentName()
-        return studentName;
-    }
+    public LocalDateTime getRecordedAt() { return recordedAt; }
+    public void setRecordedAt(LocalDateTime recordedAt) { this.recordedAt = recordedAt; }
 
-    public LocalDate getDate() {  // ✅ Add getDate()
-        return date;
-    }
-
-    public boolean getStatus() {  // ✅ Add getStatus()
-        return status;
-    }
-
-    public String getSubject() {
-        return subject;
-    }
-
-    public int getTotalClasses() {
-        return totalClasses;
-    }
-
-    public int getAttendedClasses() {
-        return attendedClasses;
-    }
-
-    // ✅ Setter Methods
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void setStudentId(int studentId) {
-        this.studentId = studentId;
-    }
-
-    public void setStudentName(String studentName) {  // ✅ Add setStudentName()
-        this.studentName = studentName;
-    }
-
-    public void setDate(LocalDate date) {  // ✅ Add setDate()
-        this.date = date;
-    }
-
-    public void setStatus(boolean status) {  // ✅ Add setStatus()
-        this.status = status;
-    }
-
-    public void setSubject(String subject) {
-        this.subject = subject;
-    }
-
-    public void setTotalClasses(int totalClasses) {
-        this.totalClasses = totalClasses;
-    }
-
-    public void setAttendedClasses(int attendedClasses) {
-        this.attendedClasses = attendedClasses;
-    }
-
-    public  void setPresent(boolean isPresent){
-        this.isPresent = isPresent;
-    }
+    public int getTeacherId() { return teacherId; }
+    public void setTeacherId(int teacherId) { this.teacherId = teacherId; }
 }
