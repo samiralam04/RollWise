@@ -3,6 +3,11 @@
 <%@ page import="java.sql.*, java.util.*" %>
 
 <%
+    // Prevent back button from loading cached content
+    response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1
+    response.setHeader("Pragma", "no-cache"); // HTTP 1.0
+    response.setDateHeader("Expires", 0); // Prevents caching
+
     // Session validation
     String adminName = (String) session.getAttribute("username");
     if (adminName == null) {
@@ -10,6 +15,7 @@
         return;
     }
 %>
+
 
 <!DOCTYPE html>
 <html lang="en">
