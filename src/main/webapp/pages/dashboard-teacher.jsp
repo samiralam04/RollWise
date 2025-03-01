@@ -39,8 +39,8 @@
             <div class="col-md-6">
                 <div class="card p-3">
                     <h4>Upload Attendance</h4>
-                    <form action="UploadExcelServlet" method="post" enctype="multipart/form-data">
-                        <input type="file" name="attendanceFile" class="form-control mb-2" required>
+                    <form action="<%= request.getContextPath() %>/UploadExcelServlet" method="post" enctype="multipart/form-data">
+                        <input type="file" name="file" class="form-control mb-2" required>
                         <button type="submit" class="btn btn-success">Upload</button>
                     </form>
                 </div>

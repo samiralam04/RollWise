@@ -37,6 +37,7 @@
 
                 <button type="submit" class="btn btn-primary w-100">Login</button>
             </form>
+            <p class="text-center mt-3">New user ? <a href="register.jsp">Register here</a></p>
         </div>
     </div>
 
