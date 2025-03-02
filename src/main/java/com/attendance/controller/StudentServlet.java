@@ -1,5 +1,6 @@
 package com.attendance.controller;
 
+import com.attendance.model.Attendance;
 import com.attendance.model.Student;
 import com.attendance.util.DBConnection;
 
@@ -10,12 +11,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-
+@WebServlet("/student")
 public class StudentServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -42,18 +44,40 @@ public class StudentServlet extends HttpServlet {
                         studentRs.getString("phone"),
                         studentRs.getString("parent_phone")
                 );
-
                 request.setAttribute("student", student);
             }
 
             // Fetch student attendance report
-            String attendanceQuery = "SELECT subject, total_classes, attended_classes, (attended_classes * 100.0 / total_classes) AS percentage " +
-                    "FROM attendance WHERE student_id = ?";
+            String attendanceQuery = "SELECT id, student_id, date, status, recorded_at, teacher_id FROM attendance WHERE student_id = ?";
             PreparedStatement attendanceStmt = conn.prepareStatement(attendanceQuery);
             attendanceStmt.setInt(1, studentId);
             ResultSet attendanceRs = attendanceStmt.executeQuery();
 
-            request.setAttribute("attendanceReport", attendanceRs);
+            List<Attendance> attendanceList = new ArrayList<>();
+
+            while (attendanceRs.next()) {
+                int id = attendanceRs.getInt("id");
+                int studentIdDb = attendanceRs.getInt("student_id");
+
+                // Convert java.sql.Date to java.time.LocalDate
+                Date sqlDate = attendanceRs.getDate("date");
+                LocalDate localDate = (sqlDate != null) ? sqlDate.toLocalDate() : null;
+
+                String status = attendanceRs.getString("status");
+
+                // Convert java.sql.Timestamp to java.time.LocalDateTime
+                Timestamp sqlTimestamp = attendanceRs.getTimestamp("recorded_at");
+                LocalDateTime recordedAt = (sqlTimestamp != null) ? sqlTimestamp.toLocalDateTime() : null;
+
+                int teacherId = attendanceRs.getInt("teacher_id");
+
+                // Create Attendance object
+                Attendance attendance = new Attendance(id, studentIdDb, localDate, status, recordedAt, teacherId);
+                attendanceList.add(attendance);
+            }
+
+            // Store attendance list in request scope
+            request.setAttribute("attendanceReport", attendanceList);
             request.getRequestDispatcher("studentDashboard.jsp").forward(request, response);
 
         } catch (SQLException e) {

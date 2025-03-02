@@ -14,7 +14,7 @@ public class StudentDAO {
 
     // Add a new student
     public boolean addStudent(Student student) {
-        String query = "INSERT INTO student (name, email, phone, roll_number, class_name, parent_phone) VALUES (?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO students (name, email, phone, roll_number, class_name, parent_phone) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
@@ -35,7 +35,7 @@ public class StudentDAO {
     // Get all students
     public List<Student> getAllStudents() {
         List<Student> students = new ArrayList<>();
-        String query = "SELECT * FROM student ORDER BY class_name, roll_number";
+        String query = "SELECT * FROM students ORDER BY class_name, roll_number";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
@@ -52,13 +52,13 @@ public class StudentDAO {
 
     // Get a student by roll number
     public Student getStudentByRollNumber(String rollNumber) {
-        String query = "SELECT * FROM student WHERE roll_number = ?";
+        String query = "SELECT * FROM students WHERE roll_number = ?";
         return getStudentByQuery(query, rollNumber);
     }
 
     // Get a student by ID
     public Student getStudentById(int id) {
-        String query = "SELECT * FROM student WHERE id = ?";
+        String query = "SELECT * FROM students WHERE id = ?";
         return getStudentByQuery(query, id);
     }
 
@@ -85,7 +85,7 @@ public class StudentDAO {
 
     // Update student details
     public boolean updateStudent(Student student) {
-        String query = "UPDATE student SET name=?, email=?, phone=?, class_name=?, parent_phone=? WHERE roll_number=?";
+        String query = "UPDATE students SET name=?, email=?, phone=?, class_name=?, parent_phone=? WHERE roll_number=?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
@@ -134,7 +134,7 @@ public class StudentDAO {
 
     private List<Student> getStudentsByAttendanceQuery(String condition, Object... params) {
         List<Student> students = new ArrayList<>();
-        String query = "SELECT s.* FROM student s JOIN attendance a ON s.id = a.student_id GROUP BY s.id " + condition;
+        String query = "SELECT s.* FROM students s JOIN attendance a ON s.id = a.student_id GROUP BY s.id " + condition;
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -156,7 +156,7 @@ public class StudentDAO {
 
     // Delete a student by ID
     public boolean deleteStudentById(int studentId) {
-        String query = "DELETE FROM student WHERE id = ?";
+        String query = "DELETE FROM students WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
