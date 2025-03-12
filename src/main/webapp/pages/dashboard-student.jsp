@@ -20,21 +20,45 @@
         return;
     }
 
+    // Fetch Student ID from students table
+    int studentId = -1;
+    try {
+        PreparedStatement ps1 = conn.prepareStatement("SELECT id FROM students WHERE student_email = ?");
+        ps1.setString(1, userEmail);
+        ResultSet rs1 = ps1.executeQuery();
+
+        if (rs1.next()) {
+            studentId = rs1.getInt("id");
+        }
+        rs1.close();
+        ps1.close();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    // If student ID is not found, show an error
+    if (studentId == -1) {
+        out.println("<h3 style='color:red;'>Student not found!</h3>");
+        return;
+    }
+
     // Fetch Attendance Data
     int totalClasses = 0, attendedClasses = 0;
     double attendancePercentage = 0.0;
 
     try {
-        PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) AS total, SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) AS present FROM attendance WHERE student_email = ?");
-        ps.setString(1, userEmail);
-        ResultSet rs = ps.executeQuery();
+        PreparedStatement ps2 = conn.prepareStatement(
+            "SELECT COUNT(*) AS total, SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) AS present " +
+            "FROM attendance WHERE student_id = ?");
+        ps2.setInt(1, studentId);
+        ResultSet rs2 = ps2.executeQuery();
 
-        if (rs.next()) {
-            totalClasses = rs.getInt("total");
-            attendedClasses = rs.getInt("present");
+        if (rs2.next()) {
+            totalClasses = rs2.getInt("total");
+            attendedClasses = rs2.getInt("present");
         }
-        rs.close();
-        ps.close();
+        rs2.close();
+        ps2.close();
 
         // Calculate attendance percentage
         attendancePercentage = (totalClasses > 0) ? (attendedClasses * 100.0 / totalClasses) : 0;
@@ -94,20 +118,21 @@
                 <tbody>
                     <%
                         try {
-                            PreparedStatement ps = conn.prepareStatement("SELECT date, status FROM attendance WHERE student_email = ? ORDER BY date DESC");
-                            ps.setString(1, userEmail);
-                            ResultSet rs = ps.executeQuery();
+                            PreparedStatement ps3 = conn.prepareStatement(
+                                "SELECT date, status FROM attendance WHERE student_id = ? ORDER BY date DESC");
+                            ps3.setInt(1, studentId);
+                            ResultSet rs3 = ps3.executeQuery();
 
-                            while (rs.next()) {
+                            while (rs3.next()) {
                     %>
                     <tr>
-                        <td><%= rs.getDate("date") %></td>
-                        <td><%= rs.getString("status") %></td>
+                        <td><%= rs3.getDate("date") %></td>
+                        <td><%= rs3.getString("status") %></td>
                     </tr>
                     <%
                             }
-                            rs.close();
-                            ps.close();
+                            rs3.close();
+                            ps3.close();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

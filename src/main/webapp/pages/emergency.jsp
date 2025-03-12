@@ -3,8 +3,8 @@
 <%@ page import="java.sql.*, java.util.*" %>
 
 <%
-    String userType = (String) session.getAttribute("userType");
-    String userEmail = (String) session.getAttribute("userEmail");
+    String userType = (String) session.getAttribute("role");
+    String userEmail = (String) session.getAttribute("email");
 
     if (userEmail == null) {
         response.sendRedirect("login.jsp");
@@ -14,7 +14,7 @@
     Connection conn = (Connection) application.getAttribute("DBConnection");
 
     // Fetching existing emergency notices
-    PreparedStatement ps = conn.prepareStatement("SELECT * FROM emergency ORDER BY declared_date DESC");
+    PreparedStatement ps = conn.prepareStatement("SELECT * FROM emergency ORDER BY date DESC");
     ResultSet rs = ps.executeQuery();
 %>
 
@@ -35,10 +35,14 @@
         <!-- Admin can declare new emergency -->
         <div class="card p-3 mb-4">
             <h4>Declare Emergency Holiday</h4>
-            <form action="EmergencyServlet" method="post">
+            <form action="${pageContext.request.contextPath}/emergency" method="post">
                 <div class="mb-2">
                     <label>Reason</label>
-                    <input type="text" name="reason" class="form-control" placeholder="e.g., Heavy Rain, Flood" required>
+                    <input type="text" name="title" class="form-control" placeholder="e.g., Heavy Rain, Flood" required>
+                </div>
+                <div class="mb-2">
+                    <label>Description</label>
+                    <textarea name="description" class="form-control" placeholder="Additional details" required></textarea>
                 </div>
                 <div class="mb-2">
                     <label>Date</label>
@@ -56,16 +60,16 @@
                 <thead>
                     <tr>
                         <th>Reason</th>
+                        <th>Description</th>
                         <th>Date</th>
-                        <th>Declared On</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% while (rs.next()) { %>
                     <tr>
-                        <td><%= rs.getString("reason") %></td>
-                        <td><%= rs.getString("emergency_date") %></td>
-                        <td><%= rs.getString("declared_date") %></td>
+                        <td><%= rs.getString("title") != null ? rs.getString("title") : "N/A" %></td>
+                        <td><%= rs.getString("description") != null ? rs.getString("description") : "N/A" %></td>
+                        <td><%= rs.getDate("date") != null ? rs.getDate("date") : "N/A" %></td>
                     </tr>
                     <% } rs.close(); ps.close(); %>
                 </tbody>
