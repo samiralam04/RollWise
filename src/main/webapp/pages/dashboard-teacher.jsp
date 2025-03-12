@@ -1,26 +1,41 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page session="true" %>
 <%@ page import="java.sql.*, java.util.*" %>
+
 <%
+    // Get user session attributes
     String userType = (String) session.getAttribute("role");
     String userEmail = (String) session.getAttribute("email");
 
-    if (userEmail == null || !userType.equals("teacher")) {
+    // Redirect if user is not logged in or not a teacher
+    if (userEmail == null || !"teacher".equals(userType)) {
         response.sendRedirect("login.jsp");
         return;
     }
 
+    // Database connection retrieval
     Connection conn = (Connection) application.getAttribute("DBConnection");
-    PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) AS total FROM students");
-    ResultSet rs = ps.executeQuery();
-
     int totalStudents = 0;
-    if (rs.next()) {
-        totalStudents = rs.getInt("total");
+
+    if (conn != null) {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement("SELECT COUNT(*) AS total FROM students");
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                totalStudents = rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (rs != null) try { rs.close(); } catch (SQLException ignored) {}
+            if (ps != null) try { ps.close(); } catch (SQLException ignored) {}
+        }
     }
-    rs.close();
-    ps.close();
 %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,7 +54,7 @@
             <div class="col-md-6">
                 <div class="card p-3">
                     <h4>Upload Attendance</h4>
-                    <form action="<%= request.getContextPath() %>/UploadExcelServlet" method="post" enctype="multipart/form-data">
+                    <form id="uploadForm" enctype="multipart/form-data">
                         <input type="file" name="file" class="form-control mb-2" required>
                         <button type="submit" class="btn btn-success">Upload</button>
                     </form>
@@ -50,10 +65,20 @@
             <div class="col-md-6">
                 <div class="card p-3">
                     <h4>Mark Attendance Manually</h4>
-                    <form action="<%= request.getContextPath() %>/attendance" method="post">
+                    <form action="<%= request.getContextPath() %>/attendance" method="post" onsubmit="return showSuccessPopup()">
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <label>Student ID</label>
+                                <input type="text" name="student_id" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label>Teacher ID</label>
+                                <input type="text" name="teacher_id" class="form-control" required>
+                            </div>
+                        </div>
                         <div class="mb-2">
-                            <label>Student Id</label>
-                            <input type="text" name="student_id" class="form-control" required>
+                            <label>Date</label>
+                            <input type="date" name="date" class="form-control" id="attendanceDate" required>
                         </div>
                         <div class="mb-2">
                             <label>Status</label>
@@ -74,7 +99,8 @@
             <table class="table table-bordered">
                 <thead>
                     <tr>
-                        <th>Student Id</th>
+                        <th>Student ID</th>
+                        <th>Teacher ID</th>
                         <th>Total Classes</th>
                         <th>Attended</th>
                         <th>Attendance %</th>
@@ -82,31 +108,108 @@
                 </thead>
                 <tbody>
                     <%
-                        ps = conn.prepareStatement("SELECT student_id, COUNT(*) AS total, SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) AS present FROM attendance GROUP BY student_id");
-                        rs = ps.executeQuery();
-                        while (rs.next()) {
-                            String studentId = rs.getString("student_id");
-                            int totalClasses = rs.getInt("total");
-                            int attendedClasses = rs.getInt("present");
-                            double percentage = (totalClasses > 0) ? (attendedClasses * 100.0 / totalClasses) : 0;
-                        %>
+                        if (conn != null) {
+                            PreparedStatement ps = null;
+                            ResultSet rs = null;
+                            try {
+                                ps = conn.prepareStatement(
+                                    "SELECT student_id, teacher_id, COUNT(*) AS total, " +
+                                    "SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) AS present " +
+                                    "FROM attendance GROUP BY student_id, teacher_id"
+                                );
+                                rs = ps.executeQuery();
+
+                                while (rs.next()) {
+                                    String studentId = rs.getString("student_id");
+                                    String teacherId = rs.getString("teacher_id");
+                                    int totalClasses = rs.getInt("total");
+                                    int attendedClasses = rs.getInt("present");
+                                    double percentage = (totalClasses > 0) ? (attendedClasses * 100.0 / totalClasses) : 0;
+                    %>
                         <tr>
                             <td><%= studentId %></td>
+                            <td><%= teacherId %></td>
                             <td><%= totalClasses %></td>
                             <td><%= attendedClasses %></td>
                             <td><%= String.format("%.2f", percentage) %> %</td>
                         </tr>
-                        <% } rs.close(); ps.close(); %>
+                    <%
+                                }
+                            } catch (SQLException e) {
+                                e.printStackTrace();
+                            } finally {
+                                if (rs != null) try { rs.close(); } catch (SQLException ignored) {}
+                                if (ps != null) try { ps.close(); } catch (SQLException ignored) {}
+                            }
+                        }
+                    %>
                 </tbody>
             </table>
         </div>
 
         <!-- Download Report Button -->
         <div class="text-center mt-3">
-            <a href="<%= request.getContextPath() %>/downloadReport">Download Report</a>
+            <a href="<%= request.getContextPath() %>/downloadReport" class="btn btn-secondary">Download Report</a>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Prevent selecting future dates
+        document.addEventListener("DOMContentLoaded", function () {
+            let today = new Date().toISOString().split('T')[0];
+            document.getElementById("attendanceDate").setAttribute("max", today);
+        });
+
+        // Show success popup instead of redirecting
+        function showSuccessPopup() {
+            alert("Attendance marked successfully!");
+            return true;
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+    document.getElementById("uploadForm").addEventListener("submit", function(event) {
+        event.preventDefault(); // Prevent normal form submission
+
+        let formData = new FormData(this); // Get the file
+
+        fetch("<%= request.getContextPath() %>/UploadExcelServlet", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())  // Expect JSON response
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Upload Successful",
+                    text: "Attendance data has been uploaded successfully!",
+                    confirmButtonText: "OK"
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Upload Failed",
+                    text: data.message,
+                    confirmButtonText: "Try Again"
+                });
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Something went wrong while uploading.",
+                confirmButtonText: "Close"
+            });
+        });
+    });
+
+    </script>
+
 </body>
 </html>
