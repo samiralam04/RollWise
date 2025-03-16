@@ -11,22 +11,37 @@ public class UserService {
 
     // ✅ Register a User
     public boolean registerUser(User user) {
-        String query = "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)";
+        String userQuery = "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?) RETURNING id";
+        String attendanceQuery = "INSERT INTO attendance (student_id, date, status) VALUES (?, CURRENT_DATE, 'Absent')";
+
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+             PreparedStatement userStmt = conn.prepareStatement(userQuery);
+             PreparedStatement attendanceStmt = conn.prepareStatement(attendanceQuery)) {
 
-            pstmt.setString(1, user.getName());
-            pstmt.setString(2, user.getEmail());
-            pstmt.setString(3, user.getPassword());
-            pstmt.setString(4, user.getRole());
+            // Insert user into the users table
+            userStmt.setString(1, user.getName());
+            userStmt.setString(2, user.getEmail());
+            userStmt.setString(3, user.getPassword());
+            userStmt.setString(4, user.getRole());
 
-            int rowsInserted = pstmt.executeUpdate();
-            return rowsInserted > 0;
+            ResultSet rs = userStmt.executeQuery(); // Get the generated ID
+
+            if (rs.next()) {
+                int userId = rs.getInt("id"); // Get newly created user ID
+
+                // If role is student, insert into attendance table
+                if ("student".equalsIgnoreCase(user.getRole())) {
+                    attendanceStmt.setInt(1, userId);
+                    attendanceStmt.executeUpdate();
+                }
+
+                return true;
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
+        return false;
     }
 
     // ✅ Validate User Login

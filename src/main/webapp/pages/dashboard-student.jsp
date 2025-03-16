@@ -3,12 +3,19 @@
 <%@ page import="java.sql.*, java.util.*" %>
 
 <%
+    // Debugging Output
+    System.out.println("Debug: Entering dashboard.jsp");
+
     // Get session values
     String userType = (String) session.getAttribute("role");
     String userEmail = (String) session.getAttribute("email");
 
-    // Redirect to login if not a student
+    System.out.println("Debug: userType=" + userType);
+    System.out.println("Debug: userEmail=" + userEmail);
+
+    // Redirect to login if session is invalid or user is not a student
     if (userEmail == null || !"student".equals(userType)) {
+        System.out.println("Debug: Unauthorized access. Redirecting to login.");
         response.sendRedirect("login.jsp");
         return;
     }
@@ -17,13 +24,14 @@
     Connection conn = (Connection) application.getAttribute("DBConnection");
     if (conn == null) {
         out.println("<h3 style='color:red;'>Database connection error!</h3>");
+        System.out.println("Debug: Database connection error!");
         return;
     }
 
-    // Fetch Student ID from students table
+    // Fetch Student ID from users table
     int studentId = -1;
     try {
-        PreparedStatement ps1 = conn.prepareStatement("SELECT id FROM students WHERE student_email = ?");
+        PreparedStatement ps1 = conn.prepareStatement("SELECT id FROM users WHERE email = ?");
         ps1.setString(1, userEmail);
         ResultSet rs1 = ps1.executeQuery();
 
@@ -32,6 +40,9 @@
         }
         rs1.close();
         ps1.close();
+
+        System.out.println("Debug: Retrieved studentId = " + studentId);
+
     } catch (Exception e) {
         e.printStackTrace();
     }
@@ -39,6 +50,7 @@
     // If student ID is not found, show an error
     if (studentId == -1) {
         out.println("<h3 style='color:red;'>Student not found!</h3>");
+        System.out.println("Debug: Student ID not found for email " + userEmail);
         return;
     }
 
@@ -62,6 +74,8 @@
 
         // Calculate attendance percentage
         attendancePercentage = (totalClasses > 0) ? (attendedClasses * 100.0 / totalClasses) : 0;
+
+        System.out.println("Debug: Attendance Data - Total: " + totalClasses + ", Attended: " + attendedClasses + ", Percentage: " + attendancePercentage);
 
     } catch (Exception e) {
         e.printStackTrace();

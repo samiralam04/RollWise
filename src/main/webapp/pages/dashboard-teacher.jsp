@@ -47,6 +47,11 @@
 </head>
 <body>
     <div class="container mt-4">
+        <!-- Logout Button -->
+        <div class="text-end mb-3">
+            <a href="logout.jsp" class="btn btn-danger">Logout</a>
+        </div>
+
         <h2 class="text-center">Teacher Dashboard</h2>
 
         <div class="row">
@@ -101,6 +106,7 @@
                     <tr>
                         <th>Student ID</th>
                         <th>Teacher ID</th>
+                        <th>Date</th>
                         <th>Total Classes</th>
                         <th>Attended</th>
                         <th>Attendance %</th>
@@ -113,15 +119,16 @@
                             ResultSet rs = null;
                             try {
                                 ps = conn.prepareStatement(
-                                    "SELECT student_id, teacher_id, COUNT(*) AS total, " +
+                                    "SELECT student_id, teacher_id, date, COUNT(*) AS total, " +
                                     "SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) AS present " +
-                                    "FROM attendance GROUP BY student_id, teacher_id"
+                                    "FROM attendance GROUP BY student_id, teacher_id, date ORDER BY date DESC"
                                 );
                                 rs = ps.executeQuery();
 
                                 while (rs.next()) {
                                     String studentId = rs.getString("student_id");
                                     String teacherId = rs.getString("teacher_id");
+                                    String date = rs.getString("date");
                                     int totalClasses = rs.getInt("total");
                                     int attendedClasses = rs.getInt("present");
                                     double percentage = (totalClasses > 0) ? (attendedClasses * 100.0 / totalClasses) : 0;
@@ -129,6 +136,7 @@
                         <tr>
                             <td><%= studentId %></td>
                             <td><%= teacherId %></td>
+                            <td><%= date %></td>
                             <td><%= totalClasses %></td>
                             <td><%= attendedClasses %></td>
                             <td><%= String.format("%.2f", percentage) %> %</td>
