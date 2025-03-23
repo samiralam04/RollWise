@@ -36,8 +36,12 @@ public class UploadExcelServlet extends HttpServlet {
                 rowIterator.next();
             }
 
-            String insertSQL = "INSERT INTO attendance (student_id, date, status, recorded_at, teacher_id) VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement pstmt = conn.prepareStatement(insertSQL);
+            String insertAttendanceSQL = "INSERT INTO attendance (student_id, date, status, recorded_at, teacher_id, parent_phone_id) " +
+                    "VALUES (?, ?, ?, ?, ?, (SELECT id FROM parents WHERE parent_phone = ?))";;
+            PreparedStatement pstmtAttendance = conn.prepareStatement(insertAttendanceSQL);
+
+            String insertParentSQL = "INSERT INTO parents (parent_phone) VALUES (?) ON CONFLICT (parent_phone) DO NOTHING";
+            PreparedStatement pstmtParent = conn.prepareStatement(insertParentSQL);
 
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
@@ -49,13 +53,14 @@ public class UploadExcelServlet extends HttpServlet {
                 String dateStr = getCellValueAsString(row.getCell(1)).trim();
                 String status = getCellValueAsString(row.getCell(2));
                 String teacherId = getCellValueAsString(row.getCell(3));
+                String parentPhone = getCellValueAsString(row.getCell(4));
 
                 if (studentId.isEmpty() || status.isEmpty() || teacherId.isEmpty()) {
                     logSkippedRow(row, "Missing required fields");
                     continue; // Skip rows with empty required fields
                 }
 
-                pstmt.setInt(1, Integer.parseInt(studentId));
+                pstmtAttendance.setInt(1, Integer.parseInt(studentId));
 
                 // **Fix for Date Issue**
                 if (!dateStr.isEmpty()) {
@@ -63,23 +68,32 @@ public class UploadExcelServlet extends HttpServlet {
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                         java.util.Date parsedDate = sdf.parse(dateStr);
                         java.sql.Date sqlDate = new java.sql.Date(parsedDate.getTime());
-                        pstmt.setDate(2, sqlDate);
+                        pstmtAttendance.setDate(2, sqlDate);
                     } catch (Exception e) {
                         logSkippedRow(row, "Invalid date format: " + dateStr);
                         continue; // Skip row with invalid date
                     }
                 } else {
-                    pstmt.setNull(2, java.sql.Types.DATE);
+                    pstmtAttendance.setNull(2, java.sql.Types.DATE);
                 }
 
-                pstmt.setString(3, status);
-                pstmt.setTimestamp(4, new Timestamp(new Date().getTime()));
-                pstmt.setInt(5, Integer.parseInt(teacherId));
+                pstmtAttendance.setString(3, status);
+                pstmtAttendance.setTimestamp(4, new Timestamp(new Date().getTime()));
+                pstmtAttendance.setInt(5, Integer.parseInt(teacherId));
 
-                pstmt.addBatch();
+                // Store parent phone number in the parent table
+                if (!parentPhone.isEmpty()) {
+                    pstmtParent.setString(1, parentPhone);
+                    pstmtParent.executeUpdate();
+                    pstmtAttendance.setString(6, parentPhone);
+                } else {
+                    pstmtAttendance.setNull(6, java.sql.Types.VARCHAR);
+                }
+
+                pstmtAttendance.addBatch();
             }
 
-            pstmt.executeBatch();
+            pstmtAttendance.executeBatch();
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
             response.getWriter().write("{\"success\": true, \"message\": \"Data uploaded successfully.\"}");
@@ -131,7 +145,7 @@ public class UploadExcelServlet extends HttpServlet {
     // Logs skipped rows with reason
     private void logSkippedRow(Row row, String reason) {
         StringBuilder rowData = new StringBuilder();
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 5; i++) {
             rowData.append(row.getCell(i) != null ? row.getCell(i).toString() : "NULL").append(" | ");
         }
         logger.warning("Skipping row " + row.getRowNum() + ": " + reason + " → " + rowData);
