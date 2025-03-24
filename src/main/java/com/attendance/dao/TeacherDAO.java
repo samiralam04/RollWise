@@ -17,8 +17,8 @@ public class TeacherDAO {
 
             stmt.setString(1, teacher.getName());
             stmt.setString(2, teacher.getEmail());
-            stmt.setString(3, teacher.getPhone().orElse(null));
-            stmt.setString(4, teacher.getSubject().orElse(null));
+            stmt.setString(3, teacher.getPhone());  // Instead of teacher.getPhone().orElse(null)
+            stmt.setString(4, teacher.getSubject()); // Instead of teacher.getSubject().orElse(null)
             stmt.setString(5, teacher.getUsername());
             stmt.setString(6, teacher.getPassword());
 
@@ -134,8 +134,8 @@ public class TeacherDAO {
 
             stmt.setString(1, teacher.getName());
             stmt.setString(2, teacher.getEmail());
-            stmt.setString(3, teacher.getPhone().orElse(null));
-            stmt.setString(4, teacher.getSubject().orElse(null));
+            stmt.setString(3, teacher.getPhone());  // Instead of teacher.getPhone().orElse(null)
+            stmt.setString(4, teacher.getSubject()); // Instead of teacher.getSubject().orElse(null)
             stmt.setString(5, teacher.getPassword());
             stmt.setString(6, teacher.getUsername());
 

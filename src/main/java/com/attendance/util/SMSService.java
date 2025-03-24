@@ -1,53 +1,40 @@
 package com.attendance.util;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.io.OutputStream;
-import java.net.URLEncoder;
+import java.util.Properties;
+import javax.mail.*;
+import javax.mail.internet.*;
 
 public class SMSService {
+    public static void sendEmail(String recipient, String subject, String content) {
+        final String username = "samir7005alam@gmail.com"; // Replace with your email
+        final String password = "iucf bsll uucl dpbw"; // Use App Password for Gmail
 
-    // Replace with your actual SMS API key and sender ID
-    private static final String API_KEY = "your_api_key_here";
-    private static final String SENDER_ID = "ATTENDSYS";
-    private static final String SMS_GATEWAY_URL = "https://api.smsgateway.com/send";
+        // SMTP Server Settings
+        Properties props = new Properties();
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.port", "587");
 
-    /**
-     * Sends an SMS to the given phone number.
-     * @param phoneNumber The recipient's phone number.
-     * @param message The message content.
-     * @return True if the message was sent successfully, false otherwise.
-     */
-    public static boolean sendSMS(String phoneNumber, String message) {
-        try {
-            // Encode parameters for URL
-            String encodedMessage = URLEncoder.encode(message, "UTF-8");
-            String requestData = "apikey=" + API_KEY
-                    + "&sender=" + SENDER_ID
-                    + "&numbers=" + phoneNumber
-                    + "&message=" + encodedMessage;
-
-            // Create URL connection
-            URL url = new URL(SMS_GATEWAY_URL);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setDoOutput(true);
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-
-            // Send request
-            try (OutputStream os = conn.getOutputStream()) {
-                os.write(requestData.getBytes());
-                os.flush();
+        // Session
+        Session session = Session.getInstance(props, new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password);
             }
+        });
 
-            // Check response code
-            int responseCode = conn.getResponseCode();
-            return responseCode == 200; // Successful response
+        try {
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(username));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
+            message.setSubject(subject);
+            message.setText(content);
 
-        } catch (Exception e) {
+            Transport.send(message);
+            System.out.println("✅ Email sent successfully to: " + recipient);
+        } catch (MessagingException e) {
             e.printStackTrace();
-            System.err.println("Failed to send SMS.");
-            return false;
+            System.out.println("❌ Email sending failed.");
         }
     }
 }

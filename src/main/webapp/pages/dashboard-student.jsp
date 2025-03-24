@@ -155,10 +155,11 @@
             </table>
         </div>
 
-        <!-- Download Report Button -->
-        <div class="text-center mt-3">
-             <a href="<%= request.getContextPath() %>/downloadReport">Download Report</a>
-        </div>
+        <!-- logout Button -->
+
+         <div class="text-center mb-3">
+                    <a href="logout.jsp" class="btn btn-danger">Logout</a>
+                </div>
     </div>
 
     <script>

@@ -24,12 +24,17 @@ public class StudentServlet extends HttpServlet {
         HttpSession session = request.getSession();
         Integer studentId = (Integer) session.getAttribute("studentId");
 
+        System.out.println("[DEBUG] Session Student ID: " + studentId);
+
         if (studentId == null) {
+            System.out.println("[ERROR] Student ID is null. Redirecting to login.jsp");
             response.sendRedirect("login.jsp");
             return;
         }
 
         try (Connection conn = DBConnection.getConnection()) {
+            System.out.println("[DEBUG] Database connection established.");
+
             // Fetch student details
             String studentQuery = "SELECT id, name, email, phone, parent_phone FROM users WHERE id = ? AND role = 'student'";
             PreparedStatement studentStmt = conn.prepareStatement(studentQuery);
@@ -45,6 +50,9 @@ public class StudentServlet extends HttpServlet {
                         studentRs.getString("parent_phone")
                 );
                 request.setAttribute("student", student);
+                System.out.println("[DEBUG] Student Found: " + student.getName());
+            } else {
+                System.out.println("[ERROR] No student found with ID: " + studentId);
             }
 
             // Fetch student attendance report
@@ -54,27 +62,23 @@ public class StudentServlet extends HttpServlet {
             ResultSet attendanceRs = attendanceStmt.executeQuery();
 
             List<Attendance> attendanceList = new ArrayList<>();
+            System.out.println("[DEBUG] Fetching attendance records for Student ID: " + studentId);
 
             while (attendanceRs.next()) {
                 int id = attendanceRs.getInt("id");
-                int studentIdDb = attendanceRs.getInt("student_id");
-
-                // Convert java.sql.Date to java.time.LocalDate
                 Date sqlDate = attendanceRs.getDate("date");
                 LocalDate localDate = (sqlDate != null) ? sqlDate.toLocalDate() : null;
-
                 String status = attendanceRs.getString("status");
-
-                // Convert java.sql.Timestamp to java.time.LocalDateTime
                 Timestamp sqlTimestamp = attendanceRs.getTimestamp("recorded_at");
                 LocalDateTime recordedAt = (sqlTimestamp != null) ? sqlTimestamp.toLocalDateTime() : null;
-
                 int teacherId = attendanceRs.getInt("teacher_id");
 
-                // Create Attendance object
-                Attendance attendance = new Attendance(id, studentIdDb, localDate, status, recordedAt, teacherId);
+                Attendance attendance = new Attendance(id, studentId, localDate, status, recordedAt, teacherId);
                 attendanceList.add(attendance);
+
+                System.out.println("[DEBUG] Attendance Record: ID=" + id + ", Date=" + localDate + ", Status=" + status);
             }
+            System.out.println("[DEBUG] Total Attendance Records Found: " + attendanceList.size());
 
             // Store attendance list in request scope
             request.setAttribute("attendanceReport", attendanceList);
@@ -82,6 +86,7 @@ public class StudentServlet extends HttpServlet {
 
         } catch (SQLException e) {
             e.printStackTrace();
+            System.out.println("[ERROR] SQL Exception: " + e.getMessage());
             response.getWriter().write("Error retrieving student data.");
         }
     }

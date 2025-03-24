@@ -18,6 +18,14 @@
 
   <dependencies>
 
+    <!-- Jakarta EE API -->
+    <dependency>
+      <groupId>jakarta.platform</groupId>
+      <artifactId>jakarta.jakartaee-web-api</artifactId>
+      <version>9.1.0</version>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- JavaMail API (Fixed) -->
     <dependency>
       <groupId>com.sun.mail</groupId>
@@ -88,6 +96,18 @@
       <artifactId>commons-collections4</artifactId>
       <version>4.4</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.17.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>2.17.1</version>
+    </dependency>
+
 
     <!-- Password hashing -->
     <dependency>

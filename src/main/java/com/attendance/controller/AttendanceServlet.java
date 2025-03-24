@@ -14,15 +14,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/attendance")
+
 public class AttendanceServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    // PostgreSQL Database connection parameters
     private static final String DB_URL = "jdbc:postgresql://localhost:5432/attendance_system";
-    private static final String DB_USER = "postgres";
-    private static final String DB_PASSWORD = "your_password";
+    private static final String DB_USER = "attendance_system";
+    private static final String DB_PASSWORD = "mark47";
 
-    // Load PostgreSQL Driver
     static {
         try {
             Class.forName("org.postgresql.Driver");
@@ -31,69 +30,88 @@ public class AttendanceServlet extends HttpServlet {
         }
     }
 
-    // GET request: Retrieve all attendance records
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setContentType("text/html");
-        PrintWriter out = response.getWriter();
-
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM attendance ORDER BY recorded_at DESC")) {
-
-            ResultSet rs = stmt.executeQuery();
-            out.println("<h2>Attendance Records</h2>");
-            out.println("<table border='1'><tr><th>Student ID</th><th>Date</th><th>Status</th><th>Recorded At</th></tr>");
-
-            while (rs.next()) {
-                out.println("<tr><td>" + rs.getInt("student_id") + "</td><td>" + rs.getDate("date") +
-                        "</td><td>" + rs.getString("status") + "</td><td>" + rs.getTimestamp("recorded_at") + "</td></tr>");
-            }
-            out.println("</table>");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            out.println("<p>Error fetching attendance data.</p>");
-        }
-    }
-
-    // POST request: Mark attendance (Present/Absent)
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
 
         String studentIdStr = request.getParameter("student_id");
+        String date = request.getParameter("date");
         String status = request.getParameter("status");
+        String teacherIdStr = request.getParameter("teacher_id");
 
-        // Validate input
-        if (studentIdStr == null || status == null || studentIdStr.isEmpty() || status.isEmpty()) {
-            out.println("<p>Invalid input. Please provide student_id and status (Present/Absent).</p>");
+        System.out.println("Received values:");
+        System.out.println("student_id: " + studentIdStr);
+        System.out.println("date: " + date);
+        System.out.println("status: " + status);
+        System.out.println("teacher_id: " + teacherIdStr);
+
+        if (studentIdStr == null || date == null || status == null || teacherIdStr == null ||
+                studentIdStr.trim().isEmpty() || date.trim().isEmpty() || status.trim().isEmpty() || teacherIdStr.trim().isEmpty()) {
+            out.println("<script>alert('Invalid input. Please provide student_id, date, status, and teacher_id.'); window.history.back();</script>");
             return;
         }
 
-        int studentId;
+        int studentId, teacherId;
         try {
             studentId = Integer.parseInt(studentIdStr);
+            teacherId = Integer.parseInt(teacherIdStr);
         } catch (NumberFormatException e) {
-            out.println("<p>Invalid student_id format. Must be a number.</p>");
+            out.println("<script>alert('Invalid student_id or teacher_id format. Must be a number.'); window.history.back();</script>");
             return;
         }
 
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement("INSERT INTO attendance (student_id, date, status, recorded_at) VALUES (?, CURRENT_DATE, ?, NOW())")) {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String checkQuery = "SELECT status FROM attendance WHERE student_id = ? AND date = ?";
+            try (PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
+                checkStmt.setInt(1, studentId);
+                checkStmt.setDate(2, java.sql.Date.valueOf(date));
+                ResultSet rs = checkStmt.executeQuery();
 
-            stmt.setInt(1, studentId);
-            stmt.setString(2, status);
-            int rows = stmt.executeUpdate();
+                if (rs.next()) {
+                    String currentStatus = rs.getString("status");
 
-            if (rows > 0) {
-                out.println("<p>Attendance marked successfully for Student ID: " + studentId + " as " + status + ".</p>");
-            } else {
-                out.println("<p>Failed to mark attendance.</p>");
+                    if (currentStatus.equalsIgnoreCase(status)) {
+                        // If teacher tries to mark the same status twice, show an alert
+                        out.println("<script>alert('Attendance is already marked as " + status + " for this date. You can only toggle status.'); window.back();</script>");
+                        return;
+                    }
+
+                    // Update the status (toggle Present <-> Absent)
+                    String updateQuery = "UPDATE attendance SET status = ?, recorded_at = NOW() WHERE student_id = ? AND date = ?";
+                    try (PreparedStatement updateStmt = conn.prepareStatement(updateQuery)) {
+                        updateStmt.setString(1, status);
+                        updateStmt.setInt(2, studentId);
+                        updateStmt.setDate(3, java.sql.Date.valueOf(date));
+
+                        int rows = updateStmt.executeUpdate();
+                        if (rows > 0) {
+                            out.println("<script>alert('Attendance updated successfully: " + status + "'); window.back()';</script>");
+                        } else {
+                            out.println("<script>alert('Failed to update attendance.'); window.back();</script>");
+                        }
+                    }
+                } else {
+                    // Insert a new attendance record
+                    String insertQuery = "INSERT INTO attendance (student_id, date, status, recorded_at, teacher_id) VALUES (?, ?, ?, NOW(), ?)";
+                    try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
+                        insertStmt.setInt(1, studentId);
+                        insertStmt.setDate(2, java.sql.Date.valueOf(date));
+                        insertStmt.setString(3, status);
+                        insertStmt.setInt(4, teacherId);
+
+                        int rows = insertStmt.executeUpdate();
+                        if (rows > 0) {
+                            out.println("<script>alert('Attendance marked successfully: " + status + "'); window.back();</script>");
+                        } else {
+                            out.println("<script>alert('Failed to mark attendance.'); window.back();</script>");
+                        }
+                    }
+                }
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
-            out.println("<p>Error saving attendance.</p>");
+            out.println("<script>alert('Error saving attendance: " + e.getMessage() + "'); window.back();</script>");
         }
     }
 }

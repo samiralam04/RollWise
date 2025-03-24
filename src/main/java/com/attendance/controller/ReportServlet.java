@@ -14,7 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-
+@WebServlet("/ReportServlet")
 public class ReportServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -35,17 +35,24 @@ public class ReportServlet extends HttpServlet {
             PreparedStatement stmt;
 
             if ("student".equals(role)) {
-                // Student can view only their attendance report
-                query = "SELECT subject, total_classes, attended_classes, (attended_classes * 100.0 / total_classes) AS percentage FROM attendance WHERE student_id = ?";
+                // Student can view only their attendance
+                query = "SELECT date, status FROM attendance WHERE student_id = ? ORDER BY date DESC";
                 stmt = conn.prepareStatement(query);
                 stmt.setInt(1, userId);
             } else if ("teacher".equals(role)) {
-                // Teacher can view all students' attendance
-                query = "SELECT s.name, a.subject, a.total_classes, a.attended_classes, (a.attended_classes * 100.0 / a.total_classes) AS percentage FROM attendance a JOIN users s ON a.student_id = s.id ORDER BY s.name";
+                // Teacher can view all students' attendance under them
+                query = "SELECT s.name, a.date, a.status FROM attendance a " +
+                        "JOIN users s ON a.student_id = s.id " +
+                        "WHERE a.teacher_id = ? " +
+                        "ORDER BY a.date DESC";
                 stmt = conn.prepareStatement(query);
+                stmt.setInt(1, userId);
             } else {
                 // Admin can view all attendance records
-                query = "SELECT s.name, s.email, a.subject, a.total_classes, a.attended_classes, (a.attended_classes * 100.0 / a.total_classes) AS percentage FROM attendance a JOIN users s ON a.student_id = s.id ORDER BY s.name";
+                query = "SELECT s.name, s.email, a.date, a.status, t.name AS teacher_name FROM attendance a " +
+                        "JOIN users s ON a.student_id = s.id " +
+                        "JOIN users t ON a.teacher_id = t.id " +
+                        "ORDER BY a.date DESC";
                 stmt = conn.prepareStatement(query);
             }
 
@@ -56,9 +63,11 @@ public class ReportServlet extends HttpServlet {
             out.println("<table border='1'><tr>");
 
             if ("student".equals(role)) {
-                out.println("<th>Subject</th><th>Total Classes</th><th>Attended Classes</th><th>Percentage</th>");
+                out.println("<th>Date</th><th>Status</th>");
+            } else if ("teacher".equals(role)) {
+                out.println("<th>Student Name</th><th>Date</th><th>Status</th>");
             } else {
-                out.println("<th>Student Name</th><th>Subject</th><th>Total Classes</th><th>Attended Classes</th><th>Percentage</th>");
+                out.println("<th>Student Name</th><th>Email</th><th>Date</th><th>Status</th><th>Teacher Name</th>");
             }
 
             out.println("</tr>");
@@ -67,11 +76,15 @@ public class ReportServlet extends HttpServlet {
                 out.println("<tr>");
                 if (!"student".equals(role)) {
                     out.println("<td>" + rs.getString("name") + "</td>");
+                    if ("admin".equals(role)) {
+                        out.println("<td>" + rs.getString("email") + "</td>");
+                    }
                 }
-                out.println("<td>" + rs.getString("subject") + "</td>");
-                out.println("<td>" + rs.getInt("total_classes") + "</td>");
-                out.println("<td>" + rs.getInt("attended_classes") + "</td>");
-                out.println("<td>" + rs.getDouble("percentage") + "%</td>");
+                out.println("<td>" + rs.getString("date") + "</td>");
+                out.println("<td>" + rs.getString("status") + "</td>");
+                if ("admin".equals(role)) {
+                    out.println("<td>" + rs.getString("teacher_name") + "</td>");
+                }
                 out.println("</tr>");
             }
 

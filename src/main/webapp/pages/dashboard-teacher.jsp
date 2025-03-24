@@ -18,20 +18,13 @@
     int totalStudents = 0;
 
     if (conn != null) {
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            ps = conn.prepareStatement("SELECT COUNT(*) AS total FROM students");
-            rs = ps.executeQuery();
-
+        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) AS total FROM students");
+             ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 totalStudents = rs.getInt("total");
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            if (rs != null) try { rs.close(); } catch (SQLException ignored) {}
-            if (ps != null) try { ps.close(); } catch (SQLException ignored) {}
         }
     }
 %>
@@ -59,7 +52,7 @@
             <div class="col-md-6">
                 <div class="card p-3">
                     <h4>Upload Attendance</h4>
-                    <form id="uploadForm" enctype="multipart/form-data">
+                    <form id="uploadForm" action="<%= request.getContextPath() %>/UploadExcelServlet" method="POST" enctype="multipart/form-data">
                         <input type="file" name="file" class="form-control mb-2" required>
                         <button type="submit" class="btn btn-success">Upload</button>
                     </form>
@@ -107,50 +100,49 @@
                         <th>Student ID</th>
                         <th>Teacher ID</th>
                         <th>Date</th>
+                        <th>Parent Email</th>
                         <th>Total Classes</th>
                         <th>Attended</th>
                         <th>Attendance %</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <%
-                        if (conn != null) {
-                            PreparedStatement ps = null;
-                            ResultSet rs = null;
-                            try {
-                                ps = conn.prepareStatement(
-                                    "SELECT student_id, teacher_id, date, COUNT(*) AS total, " +
-                                    "SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) AS present " +
-                                    "FROM attendance GROUP BY student_id, teacher_id, date ORDER BY date DESC"
-                                );
-                                rs = ps.executeQuery();
-
-                                while (rs.next()) {
-                                    String studentId = rs.getString("student_id");
-                                    String teacherId = rs.getString("teacher_id");
-                                    String date = rs.getString("date");
-                                    int totalClasses = rs.getInt("total");
-                                    int attendedClasses = rs.getInt("present");
-                                    double percentage = (totalClasses > 0) ? (attendedClasses * 100.0 / totalClasses) : 0;
-                    %>
-                        <tr>
-                            <td><%= studentId %></td>
-                            <td><%= teacherId %></td>
-                            <td><%= date %></td>
-                            <td><%= totalClasses %></td>
-                            <td><%= attendedClasses %></td>
-                            <td><%= String.format("%.2f", percentage) %> %</td>
-                        </tr>
-                    <%
-                                }
-                            } catch (SQLException e) {
-                                e.printStackTrace();
-                            } finally {
-                                if (rs != null) try { rs.close(); } catch (SQLException ignored) {}
-                                if (ps != null) try { ps.close(); } catch (SQLException ignored) {}
-                            }
-                        }
-                    %>
+                   <%
+                       if (conn != null) {
+                           try (PreparedStatement ps = conn.prepareStatement(
+                                   "SELECT a.student_id, a.teacher_id, a.date, p.parent_email, " +
+                                   "COUNT(a.student_id) OVER (PARTITION BY a.student_id) AS total_classes, " +
+                                   "SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) OVER (PARTITION BY a.student_id) AS attended_classes " +
+                                   "FROM attendance a " +
+                                   "LEFT JOIN parents p ON a.parent_email_id = p.id " +  // Fixed join condition
+                                   "ORDER BY a.date DESC"
+                           );
+                                ResultSet rs = ps.executeQuery()) {
+                               while (rs.next()) {
+                                   String studentId = rs.getString("student_id");
+                                   String teacherId = rs.getString("teacher_id");
+                                   String date = rs.getString("date");
+                                   String parentEmail = rs.getString("parent_email");
+                                   int totalClasses = rs.getInt("total_classes");
+                                   int attendedClasses = rs.getInt("attended_classes");
+                                   double percentage = (totalClasses > 0) ? (attendedClasses * 100.0 / totalClasses) : 0;
+                   %>
+                       <tr>
+                           <td><%= studentId %></td>
+                           <td><%= teacherId %></td>
+                           <td><%= date %></td>
+                           <td><%= (parentEmail != null && !parentEmail.isEmpty()) ? parentEmail : "N/A" %></td>
+                           <td><%= totalClasses %></td>
+                           <td><%= attendedClasses %></td>
+                           <td><%= String.format("%.2f", percentage) %> %</td>
+                       </tr>
+                   <%
+                               }
+                           } catch (SQLException e) {
+                               e.printStackTrace();
+                           }
+                       }
+                   %>
                 </tbody>
             </table>
         </div>
@@ -181,33 +173,24 @@
 
     <script>
     document.getElementById("uploadForm").addEventListener("submit", function(event) {
-        event.preventDefault(); // Prevent normal form submission
+        event.preventDefault();
 
-        let formData = new FormData(this); // Get the file
+        let formData = new FormData(this);
 
         fetch("<%= request.getContextPath() %>/UploadExcelServlet", {
             method: "POST",
             body: formData
         })
-        .then(response => response.json())  // Expect JSON response
+        .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    icon: "success",
-                    title: "Upload Successful",
-                    text: "Attendance data has been uploaded successfully!",
-                    confirmButtonText: "OK"
-                });
-            } else {
-                Swal.fire({
-                    icon: "error",
-                    title: "Upload Failed",
-                    text: data.message,
-                    confirmButtonText: "Try Again"
-                });
-            }
+            Swal.fire({
+                icon: data.success ? "success" : "error",
+                title: data.success ? "Upload Successful" : "Upload Failed",
+                text: data.message || "Something went wrong",
+                confirmButtonText: "OK"
+            });
         })
-        .catch(error => {
+        .catch(() => {
             Swal.fire({
                 icon: "error",
                 title: "Error",
@@ -216,7 +199,6 @@
             });
         });
     });
-
     </script>
 
 </body>

@@ -1,13 +1,11 @@
 package com.attendance.model;
 
-import java.util.Optional;
-
 public class Teacher {
     private int id;
     private String name;
     private String email;
-    private Optional<String> phone;
-    private Optional<String> subject;
+    private String phone;  // ❌ Remove Optional here
+    private String subject;
     private String username;
     private String password;
 
@@ -16,15 +14,15 @@ public class Teacher {
         this.id = id;
         this.name = name;
         this.email = email;
-        this.phone = Optional.ofNullable(phone);
-        this.subject = Optional.ofNullable(subject);
+        this.phone = phone;  // ✅ Store raw value
+        this.subject = subject;
         this.username = username;
         this.password = password;
     }
 
-    // ✅ Constructor with (id, name, email, phone, subject, username) [NEWLY ADDED]
+    // ✅ Constructor with (id, name, email, phone, subject, username)
     public Teacher(int id, String name, String email, String phone, String subject, String username) {
-        this(id, name, email, phone, subject, username, null); // Password set as null
+        this(id, name, email, phone, subject, username, null);
     }
 
     // ✅ Constructor with (id, name, email, subject)
@@ -37,15 +35,18 @@ public class Teacher {
         this(id, name, email, null, null, null, null);
     }
 
-    // ✅ Default Constructor (Required for JDBC)
+    // ✅ Default Constructor
     public Teacher() {}
 
     // ✅ Getter Methods
     public int getId() { return id; }
     public String getName() { return name; }
     public String getEmail() { return email; }
-    public Optional<String> getPhone() { return phone; }
-    public Optional<String> getSubject() { return subject; }
+
+    // ✅ Handle Optional at method level
+    public String getPhone() { return phone != null ? phone : "N/A"; }
+    public String getSubject() { return subject != null ? subject : "N/A"; }
+
     public String getUsername() { return username; }
 
     // ❌ Do not expose raw password in real applications
@@ -57,8 +58,8 @@ public class Teacher {
     public void setId(int id) { this.id = id; }
     public void setName(String name) { this.name = name; }
     public void setEmail(String email) { this.email = email; }
-    public void setPhone(String phone) { this.phone = Optional.ofNullable(phone); }
-    public void setSubject(String subject) { this.subject = Optional.ofNullable(subject); }
+    public void setPhone(String phone) { this.phone = phone; }
+    public void setSubject(String subject) { this.subject = subject; }
     public void setUsername(String username) { this.username = username; }
 
     public void setPassword(String password) {
@@ -66,15 +67,15 @@ public class Teacher {
         this.password = password;
     }
 
-    // ✅ toString() for easy debugging
+    // ✅ toString() for debugging
     @Override
     public String toString() {
         return "Teacher{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
-                ", phone=" + phone.orElse("N/A") +
-                ", subject=" + subject.orElse("N/A") +
+                ", phone='" + getPhone() + '\'' +
+                ", subject='" + getSubject() + '\'' +
                 ", username='" + username + '\'' +
                 '}';
     }

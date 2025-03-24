@@ -9,7 +9,6 @@ import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.*;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
 import java.util.Date;
 import java.util.logging.Logger;
 
@@ -28,20 +27,27 @@ public class UploadExcelServlet extends HttpServlet {
         try (Workbook workbook = new XSSFWorkbook(fileContent);
              Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
 
+            conn.setAutoCommit(false); // Enable transaction management
+
             Sheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rowIterator = sheet.iterator();
 
-            // Skip header row
             if (rowIterator.hasNext()) {
-                rowIterator.next();
+                rowIterator.next(); // Skip header row
             }
 
-            String insertAttendanceSQL = "INSERT INTO attendance (student_id, date, status, recorded_at, teacher_id, parent_phone_id) " +
-                    "VALUES (?, ?, ?, ?, ?, (SELECT id FROM parents WHERE parent_phone = ?))";;
-            PreparedStatement pstmtAttendance = conn.prepareStatement(insertAttendanceSQL);
-
-            String insertParentSQL = "INSERT INTO parents (parent_phone) VALUES (?) ON CONFLICT (parent_phone) DO NOTHING";
+            // Query to insert parent email (only if it does not exist)
+            String insertParentSQL = "INSERT INTO parents (parent_email) VALUES (?) ON CONFLICT (parent_email) DO NOTHING";
             PreparedStatement pstmtParent = conn.prepareStatement(insertParentSQL);
+
+            // Query to get parent ID based on email
+            String getParentIdSQL = "SELECT id FROM parents WHERE parent_email = ?";
+            PreparedStatement pstmtGetParentId = conn.prepareStatement(getParentIdSQL);
+
+            // Query to insert attendance record
+            String insertAttendanceSQL = "INSERT INTO attendance (student_id, date, status, recorded_at, teacher_id, parent_email_id) " +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
+            PreparedStatement pstmtAttendance = conn.prepareStatement(insertAttendanceSQL);
 
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
@@ -53,16 +59,31 @@ public class UploadExcelServlet extends HttpServlet {
                 String dateStr = getCellValueAsString(row.getCell(1)).trim();
                 String status = getCellValueAsString(row.getCell(2));
                 String teacherId = getCellValueAsString(row.getCell(3));
-                String parentPhone = getCellValueAsString(row.getCell(4));
+                String parentEmail = getCellValueAsString(row.getCell(4));
 
                 if (studentId.isEmpty() || status.isEmpty() || teacherId.isEmpty()) {
                     logSkippedRow(row, "Missing required fields");
-                    continue; // Skip rows with empty required fields
+                    continue;
+                }
+
+                Integer parentId = null; // Default to NULL
+
+                if (!parentEmail.isEmpty()) {
+                    // Insert parent email if not exists
+                    pstmtParent.setString(1, parentEmail);
+                    pstmtParent.executeUpdate();
+
+                    // Retrieve the parent ID
+                    pstmtGetParentId.setString(1, parentEmail);
+                    ResultSet rs = pstmtGetParentId.executeQuery();
+                    if (rs.next()) {
+                        parentId = rs.getInt(1); // Get parent ID
+                    }
+                    rs.close();
                 }
 
                 pstmtAttendance.setInt(1, Integer.parseInt(studentId));
 
-                // **Fix for Date Issue**
                 if (!dateStr.isEmpty()) {
                     try {
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -71,7 +92,7 @@ public class UploadExcelServlet extends HttpServlet {
                         pstmtAttendance.setDate(2, sqlDate);
                     } catch (Exception e) {
                         logSkippedRow(row, "Invalid date format: " + dateStr);
-                        continue; // Skip row with invalid date
+                        continue;
                     }
                 } else {
                     pstmtAttendance.setNull(2, java.sql.Types.DATE);
@@ -81,19 +102,18 @@ public class UploadExcelServlet extends HttpServlet {
                 pstmtAttendance.setTimestamp(4, new Timestamp(new Date().getTime()));
                 pstmtAttendance.setInt(5, Integer.parseInt(teacherId));
 
-                // Store parent phone number in the parent table
-                if (!parentPhone.isEmpty()) {
-                    pstmtParent.setString(1, parentPhone);
-                    pstmtParent.executeUpdate();
-                    pstmtAttendance.setString(6, parentPhone);
+                if (parentId != null) {
+                    pstmtAttendance.setInt(6, parentId);
                 } else {
-                    pstmtAttendance.setNull(6, java.sql.Types.VARCHAR);
+                    pstmtAttendance.setNull(6, java.sql.Types.INTEGER);
                 }
 
                 pstmtAttendance.addBatch();
             }
 
             pstmtAttendance.executeBatch();
+            conn.commit(); // Commit transaction
+
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
             response.getWriter().write("{\"success\": true, \"message\": \"Data uploaded successfully.\"}");
@@ -104,11 +124,9 @@ public class UploadExcelServlet extends HttpServlet {
         }
     }
 
-    // Helper function to check if a row is empty
+    // Check if a row is empty
     private boolean isRowEmpty(Row row) {
-        if (row == null) {
-            return true;
-        }
+        if (row == null) return true;
         for (int c = row.getFirstCellNum(); c < row.getLastCellNum(); c++) {
             Cell cell = row.getCell(c);
             if (cell != null && cell.getCellType() != CellType.BLANK) {
@@ -118,11 +136,9 @@ public class UploadExcelServlet extends HttpServlet {
         return true;
     }
 
-    // Helper function to extract cell values safely
+    // Get cell value safely
     private String getCellValueAsString(Cell cell) {
-        if (cell == null) {
-            return "";
-        }
+        if (cell == null) return "";
         switch (cell.getCellType()) {
             case STRING:
                 return cell.getStringCellValue().trim();
@@ -142,7 +158,7 @@ public class UploadExcelServlet extends HttpServlet {
         }
     }
 
-    // Logs skipped rows with reason
+    // Log skipped rows with reasons
     private void logSkippedRow(Row row, String reason) {
         StringBuilder rowData = new StringBuilder();
         for (int i = 0; i < 5; i++) {

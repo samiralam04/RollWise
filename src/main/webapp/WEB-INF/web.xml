@@ -8,6 +8,15 @@
 
   <!-- Servlets and Mappings -->
   <servlet>
+    <servlet-name>DownloadReportServlet</servlet-name>
+    <servlet-class>com.attendance.controller.DownloadReportServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>DownloadReportServlet</servlet-name>
+    <url-pattern>/downloadReport</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
     <servlet-name>RegisterServlet</servlet-name>
     <servlet-class>com.attendance.controller.RegisterServlet</servlet-class>
   </servlet>
@@ -38,12 +47,10 @@
     <servlet-name>UploadExcelServlet</servlet-name>
     <servlet-class>com.attendance.controller.UploadExcelServlet</servlet-class>
   </servlet>
-
   <servlet-mapping>
     <servlet-name>UploadExcelServlet</servlet-name>
     <url-pattern>/UploadExcelServlet</url-pattern>
   </servlet-mapping>
-
 
   <servlet>
     <servlet-name>AttendanceServlet</servlet-name>
@@ -81,16 +88,7 @@
     <url-pattern>/teacher/*</url-pattern>
   </servlet-mapping>
 
-  <servlet>
-    <servlet-name>DownloadReportServlet</servlet-name>
-    <servlet-class>com.attendance.controller.DownloadReportServlet</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>DownloadReportServlet</servlet-name>
-    <url-pattern>/downloadReport</url-pattern>
-  </servlet-mapping>
-
-  <!-- JSP Mappings -->
+  <!-- JSP Page Mappings -->
   <servlet>
     <servlet-name>LoginPage</servlet-name>
     <jsp-file>/pages/login.jsp</jsp-file>

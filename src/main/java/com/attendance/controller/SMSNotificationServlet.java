@@ -2,7 +2,6 @@ package com.attendance.controller;
 
 import com.attendance.util.DBConnection;
 import com.attendance.util.SMSService;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -14,57 +13,68 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-
+@WebServlet("/sendEmailNotifications")
 public class SMSNotificationServlet extends HttpServlet {
-
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        System.out.println("📢 Servlet called: sendEmailNotifications");
+
         try (Connection conn = DBConnection.getConnection()) {
-            // Fetch students with attendance below 75%
-            String query = "SELECT s.name, s.phone, s.parent_phone, a.subject, (a.attended_classes * 100.0 / a.total_classes) AS percentage " +
-                    "FROM attendance a JOIN users s ON a.student_id = s.id " +
-                    "WHERE (a.attended_classes * 100.0 / a.total_classes) < 75";
-            PreparedStatement stmt = conn.prepareStatement(query);
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                String studentName = rs.getString("name");
-                String subject = rs.getString("subject");
-                double percentage = rs.getDouble("percentage");
-                String parentPhone = rs.getString("parent_phone");
-
-                // SMS message to parents
-                String message = "Dear Parent, your child " + studentName + " has low attendance in " + subject +
-                        " (Only " + percentage + "%). Please ensure they attend classes regularly.";
-
-                // Send SMS
-                SMSService.sendSMS(parentPhone, message);
+            if (conn == null) {
+                System.out.println("❌ Database connection failed.");
+                response.getWriter().write("Database connection error.");
+                return;
             }
 
-            // Fetch students with attendance nearing 75% (between 75% and 77%) for warning SMS
-            query = "SELECT s.name, s.phone, a.subject, (a.attended_classes * 100.0 / a.total_classes) AS percentage " +
-                    "FROM attendance a JOIN users s ON a.student_id = s.id " +
-                    "WHERE (a.attended_classes * 100.0 / a.total_classes) BETWEEN 75 AND 77";
-            stmt = conn.prepareStatement(query);
-            rs = stmt.executeQuery();
+            System.out.println("✅ Database connected successfully.");
 
-            while (rs.next()) {
-                String studentName = rs.getString("name");
-                String subject = rs.getString("subject");
-                double percentage = rs.getDouble("percentage");
-                String studentPhone = rs.getString("phone");
+            // ✅ FIXED SQL QUERY TO MATCH CORRECT COLUMN
+            String query = "SELECT a.student_id, p.parent_email, " +
+                    "(COUNT(CASE WHEN a.status = 'Present' THEN 1 END) * 100.0 / COUNT(*)) AS percentage " +
+                    "FROM attendance a " +
+                    "JOIN parents p ON a.parent_email_id = p.parent_email " + // ✅ FIXED HERE
+                    "GROUP BY a.student_id, p.parent_email " +
+                    "HAVING (COUNT(CASE WHEN a.status = 'Present' THEN 1 END) * 100.0 / COUNT(*)) < 75";
 
-                // SMS message to student
-                String warningMessage = "Alert: Your attendance in " + subject + " is " + percentage + "%. " +
-                        "Maintain attendance above 75% to avoid penalties.";
+            try (PreparedStatement stmt = conn.prepareStatement(query);
+                 ResultSet rs = stmt.executeQuery()) {
 
-                // Send SMS
-                SMSService.sendSMS(studentPhone, warningMessage);
+                boolean messageSent = false;
+
+                while (rs.next()) {
+                    int studentId = rs.getInt("student_id");
+                    double percentage = rs.getDouble("percentage");
+                    String parentEmail = rs.getString("parent_email");
+
+                    System.out.println("\n📌 Found student with low attendance:");
+                    System.out.println("   📌 Student ID: " + studentId);
+                    System.out.println("   📌 Parent Email: " + parentEmail);
+                    System.out.println("   📌 Attendance Percentage: " + percentage);
+
+                    // Email subject and body
+                    String subject = "⚠️ Attendance Alert for Your Child";
+                    String message = "Dear Parent,\n\n" +
+                            "Your child's attendance is low (" + percentage + "%). " +
+                            "Please ensure they attend classes regularly.\n\n" +
+                            "Best Regards,\nAttendance System";
+
+                    System.out.println("📩 Sending Email to " + parentEmail);
+
+                    // Send Email
+                    SMSService.sendEmail(parentEmail, subject, message);
+
+                    messageSent = true;
+                }
+
+                if (messageSent) {
+                    response.getWriter().write("✅ Email notifications sent successfully.");
+                } else {
+                    response.getWriter().write("⚠️ No students found with attendance below 75%.");
+                }
             }
 
-            response.getWriter().write("SMS notifications sent successfully.");
         } catch (SQLException e) {
             e.printStackTrace();
-            response.getWriter().write("Error sending SMS notifications.");
+            response.getWriter().write("❌ Error sending email notifications.");
         }
     }
 }
