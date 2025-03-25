@@ -3,10 +3,10 @@
 <%@ page import="java.sql.*, java.util.*" %>
 
 <%
-    String userType = (String) session.getAttribute("role"); // 'role' is stored in session in LoginServlet
-    String userEmail = (String) session.getAttribute("email"); // Fix: Use correct session key
+    String userType = (String) session.getAttribute("role");
+    String userEmail = (String) session.getAttribute("email");
 
-    if (userEmail == null) { // Fix: Use correct variable name
+    if (userEmail == null) {
         response.sendRedirect("login.jsp");
         return;
     }
@@ -26,7 +26,7 @@
     <div class="container mt-4">
         <h2 class="text-center">Attendance Management</h2>
 
-        <% if (userType.equals("teacher")) { %>
+        <% if ("teacher".equals(userType)) { %>
         <!-- Teacher View: Mark Attendance -->
         <div class="card p-3 mt-3">
             <h4>Mark Attendance</h4>
@@ -41,12 +41,19 @@
                         <option value="">--Select Student--</option>
                         <%
                             Connection conn = (Connection) application.getAttribute("DBConnection");
-                            Statement stmt = conn.createStatement();
-                            ResultSet rs = stmt.executeQuery("SELECT id, name FROM students");
-                            while (rs.next()) {
+                            if (conn != null) {
+                                try (PreparedStatement stmt = conn.prepareStatement("SELECT id, name FROM students");
+                                     ResultSet rs = stmt.executeQuery()) {
+                                    while (rs.next()) {
                         %>
                         <option value="<%= rs.getInt("id") %>"><%= rs.getString("name") %></option>
-                        <% } rs.close(); stmt.close(); %>
+                        <%
+                                    }
+                                }
+                            } else {
+                        %>
+                        <option value="">Database connection error</option>
+                        <% } %>
                     </select>
                 </div>
                 <div class="mb-3">
@@ -61,7 +68,7 @@
         </div>
         <% } %>
 
-        <% if (userType.equals("student") || userType.equals("parent")) { %>
+        <% if ("student".equals(userType) || "parent".equals(userType)) { %>
         <!-- Student/Parent View: View Attendance -->
         <div class="card p-3 mt-3">
             <h4>View Attendance</h4>
@@ -74,16 +81,22 @@
                 </thead>
                 <tbody>
                     <%
-                        PreparedStatement ps = conn.prepareStatement("SELECT date, status FROM attendance WHERE student_email = ?");
-                        ps.setString(1, userEmail);
-                        ResultSet rs2 = ps.executeQuery();
-                        while (rs2.next()) {
+                        if (conn != null) {
+                            try (PreparedStatement ps = conn.prepareStatement("SELECT date, status FROM attendance WHERE student_email = ?")) {
+                                ps.setString(1, userEmail);
+                                try (ResultSet rs2 = ps.executeQuery()) {
+                                    while (rs2.next()) {
                     %>
                     <tr>
                         <td><%= rs2.getDate("date") %></td>
                         <td><%= rs2.getString("status") %></td>
                     </tr>
-                    <% } rs2.close(); ps.close(); %>
+                    <%
+                                    }
+                                }
+                            }
+                        }
+                    %>
                 </tbody>
             </table>
         </div>

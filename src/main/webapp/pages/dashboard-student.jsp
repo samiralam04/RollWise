@@ -101,9 +101,10 @@
             <div class="col-md-6">
                 <div class="card p-3">
                     <h4>Attendance Overview</h4>
-                    <p>Total Classes: <strong><%= totalClasses %></strong></p>
-                    <p>Classes Attended: <strong><%= attendedClasses %></strong></p>
-                    <p>Attendance Percentage: <strong><%= String.format("%.2f", attendancePercentage) %>%</strong></p>
+                    <p><strong>Student ID:</strong> <%= studentId %></p>
+                    <p><strong>Total Classes:</strong> <%= totalClasses %></p>
+                    <p><strong>Classes Attended:</strong> <%= attendedClasses %></p>
+                    <p><strong>Attendance Percentage:</strong> <%= String.format("%.2f", attendancePercentage) %>%</p>
 
                     <% if (attendancePercentage < 75) { %>
                         <p class="text-danger"><strong>⚠ Warning:</strong> Your attendance is below 75%! Please attend classes.</p>
@@ -115,7 +116,7 @@
 
             <div class="col-md-6">
                 <!-- Attendance Chart -->
-                <canvas id="attendanceChart"></canvas>
+                <canvas id="attendanceChart" style="max-width: 550px; max-height: 550px;"></canvas>
             </div>
         </div>
 
@@ -155,11 +156,10 @@
             </table>
         </div>
 
-        <!-- logout Button -->
-
-         <div class="text-center mb-3">
-                    <a href="logout.jsp" class="btn btn-danger">Logout</a>
-                </div>
+        <!-- Logout Button -->
+        <div class="text-center mb-3">
+            <a href="logout.jsp" class="btn btn-danger">Logout</a>
+        </div>
     </div>
 
     <script>

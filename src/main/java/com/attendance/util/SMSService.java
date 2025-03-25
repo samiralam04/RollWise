@@ -7,7 +7,7 @@ import javax.mail.internet.*;
 public class SMSService {
     public static void sendEmail(String recipient, String subject, String content) {
         final String username = "samir7005alam@gmail.com"; // Replace with your email
-        final String password = "iucf bsll uucl dpbw"; // Use App Password for Gmail
+        final String password = "qhmo kemf ouag rdac"; // Use App Password for Gmail
 
         // SMTP Server Settings
         Properties props = new Properties();

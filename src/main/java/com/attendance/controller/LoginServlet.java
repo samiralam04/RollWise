@@ -13,10 +13,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.json.JSONObject;
-import org.mindrot.jbcrypt.BCrypt; // Import this if using hashed passwords
+import org.mindrot.jbcrypt.BCrypt;
 
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
@@ -27,50 +29,48 @@ public class LoginServlet extends HttpServlet {
 
         JSONObject jsonResponse = new JSONObject();
 
-        if (email == null || password == null || role == null || email.isEmpty() || password.isEmpty()) {
+        // Input Validation
+        if (email == null || password == null || role == null || email.isEmpty() || password.isEmpty() || role.isEmpty()) {
             jsonResponse.put("status", "error");
-            jsonResponse.put("message", "Invalid Credentials");
+            jsonResponse.put("message", "All fields are required.");
             response.getWriter().write(jsonResponse.toString());
             return;
         }
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT id, username, password, role FROM users WHERE email = ?")) {
+                     "SELECT id, username, password FROM users WHERE email = ? AND role = ?")) {
 
             stmt.setString(1, email);
+            stmt.setString(2, role);
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                String storedPassword = rs.getString("password");
-                String storedRole = rs.getString("role");
+                String storedHashedPassword = rs.getString("password");
+                boolean passwordMatch = BCrypt.checkpw(password, storedHashedPassword); // Secure password check
 
-                // Verify Password (use BCrypt if passwords are hashed)
-                boolean passwordMatch = storedPassword.equals(password); // ❌ Plain text check
-                // boolean passwordMatch = BCrypt.checkpw(password, storedPassword); // ✅ Use this if hashed
-
-                if (passwordMatch && storedRole.equalsIgnoreCase(role)) {
+                if (passwordMatch) {
+                    // Create session
                     HttpSession session = request.getSession();
                     session.setAttribute("userId", rs.getInt("id"));
                     session.setAttribute("username", rs.getString("username"));
                     session.setAttribute("email", email);
-                    session.setAttribute("role", storedRole); // Store role from DB
+                    session.setAttribute("role", role); // Store role
 
                     // Debugging Logs (Remove in production)
-                    System.out.println("User logged in: " + email + ", Role: " + storedRole);
+                    System.out.println("User logged in: " + email + ", Role: " + role);
 
-                    // Determine redirect URL based on role
-                    String redirectUrl = request.getContextPath() + "/pages/dashboard-" + storedRole.toLowerCase() + ".jsp";
-
+                    // Redirect user to the appropriate dashboard
+                    String redirectUrl = request.getContextPath() + "/pages/dashboard-" + role.toLowerCase() + ".jsp";
                     jsonResponse.put("status", "success");
                     jsonResponse.put("redirect", redirectUrl);
                 } else {
                     jsonResponse.put("status", "error");
-                    jsonResponse.put("message", "Invalid Credentials");
+                    jsonResponse.put("message", "Invalid email or password.");
                 }
             } else {
                 jsonResponse.put("status", "error");
-                jsonResponse.put("message", "Invalid Credentials");
+                jsonResponse.put("message", "User not found or role mismatch.");
             }
         } catch (SQLException e) {
             e.printStackTrace();

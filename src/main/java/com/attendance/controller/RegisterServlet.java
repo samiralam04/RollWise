@@ -8,52 +8,49 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import com.attendance.model.User;
 import com.attendance.service.UserService;
+import org.mindrot.jbcrypt.BCrypt;
 
- // Ensuring proper servlet mapping
- @WebServlet("/RegisterServlet")
- public class RegisterServlet extends HttpServlet {
+@WebServlet("/RegisterServlet")
+public class RegisterServlet extends HttpServlet {
 
-     private static final long serialVersionUID = 1L;
-     private UserService userService;
+    private static final long serialVersionUID = 1L;
+    private UserService userService;
 
-     @Override
-     public void init() {
-         userService = new UserService();
-     }
+    @Override
+    public void init() {
+        userService = new UserService();
+    }
 
-     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-         // Retrieving form parameters
-         String name = request.getParameter("name");
-         String email = request.getParameter("email");
-         String password = request.getParameter("password");
-         String role = request.getParameter("role");
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String name = request.getParameter("name");
+        String email = request.getParameter("email");
+        String password = request.getParameter("password");
+        String role = request.getParameter("role");
 
-         // Setting response type
-         response.setContentType("text/plain");
-         response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/plain");
+        response.setCharacterEncoding("UTF-8");
 
-         // Input validation: Ensure all fields are provided
-         if (name == null || email == null || password == null || role == null ||
-                 name.isEmpty() || email.isEmpty() || password.isEmpty() || role.isEmpty()) {
-             response.getWriter().write("All fields are required.");
-             return;
-         }
+        if (name == null || email == null || password == null || role == null ||
+                name.isEmpty() || email.isEmpty() || password.isEmpty() || role.isEmpty()) {
+            response.getWriter().write("All fields are required.");
+            return;
+        }
 
-         // Role validation
-         if (!("Student".equalsIgnoreCase(role) || "Teacher".equalsIgnoreCase(role) || "Admin".equalsIgnoreCase(role))) {
-             response.getWriter().write("Invalid role selection.");
-             return;
-         }
+        if (!("Student".equalsIgnoreCase(role) || "Teacher".equalsIgnoreCase(role) || "Admin".equalsIgnoreCase(role))) {
+            response.getWriter().write("Invalid role selection.");
+            return;
+        }
 
-         // Creating a User object
-         User user = new User(name, email, password, role);
-         boolean isRegistered = userService.registerUser(user);
+        // Encrypt the password before saving
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
 
-         // Returning a plain text response
-         if (isRegistered) {
-             response.getWriter().write("success");  // Send "success" string instead of redirecting
-         } else {
-             response.getWriter().write("Registration failed. Email may already exist.");
-         }
-     }
- }
+        User user = new User(name, email, hashedPassword, role);
+        boolean isRegistered = userService.registerUser(user);
+
+        if (isRegistered) {
+            response.getWriter().write("success");
+        } else {
+            response.getWriter().write("Registration failed. Email may already exist.");
+        }
+    }
+}

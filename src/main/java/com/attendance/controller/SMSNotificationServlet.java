@@ -27,13 +27,12 @@ public class SMSNotificationServlet extends HttpServlet {
 
             System.out.println("✅ Database connected successfully.");
 
-            // ✅ FIXED SQL QUERY TO MATCH CORRECT COLUMN
-            String query = "SELECT a.student_id, p.parent_email, " +
-                    "(COUNT(CASE WHEN a.status = 'Present' THEN 1 END) * 100.0 / COUNT(*)) AS percentage " +
-                    "FROM attendance a " +
-                    "JOIN parents p ON a.parent_email_id = p.parent_email " + // ✅ FIXED HERE
-                    "GROUP BY a.student_id, p.parent_email " +
-                    "HAVING (COUNT(CASE WHEN a.status = 'Present' THEN 1 END) * 100.0 / COUNT(*)) < 75";
+            // ✅ FIXED SQL QUERY: Fetch parent email from attendance table
+            String query = "SELECT student_id, parent_email, " +
+                    "(COUNT(CASE WHEN status = 'Present' THEN 1 END) * 100.0 / COUNT(*)) AS percentage " +
+                    "FROM attendance " +
+                    "GROUP BY student_id, parent_email " +
+                    "HAVING (COUNT(CASE WHEN status = 'Present' THEN 1 END) * 100.0 / COUNT(*)) < 75";
 
             try (PreparedStatement stmt = conn.prepareStatement(query);
                  ResultSet rs = stmt.executeQuery()) {
@@ -61,6 +60,7 @@ public class SMSNotificationServlet extends HttpServlet {
 
                     // Send Email
                     SMSService.sendEmail(parentEmail, subject, message);
+                    System.out.print("Email sent to parents"+parentEmail); // for testing console message !
 
                     messageSent = true;
                 }
