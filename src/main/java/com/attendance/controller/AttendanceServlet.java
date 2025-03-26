@@ -1,12 +1,9 @@
 package com.attendance.controller;
 
+import com.attendance.service.AttendanceNotifier;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -78,8 +75,10 @@ public class AttendanceServlet extends HttpServlet {
 
                         int rows = updateStmt.executeUpdate();
                         if (rows > 0) {
-                            // 🔹 Trigger email after updating attendance
-                            sendAttendanceEmails(studentId, status);
+                            // ✅ Check if attendance falls below 75% and trigger email
+                            if (isAttendanceBelowThreshold(conn, studentId)) {
+                                AttendanceNotifier.sendAttendanceEmails();
+                            }
                             out.println("<script>alert('Attendance updated successfully: " + status + "'); window.history.back();</script>");
                         } else {
                             out.println("<script>alert('Failed to update attendance.'); window.history.back();</script>");
@@ -96,8 +95,10 @@ public class AttendanceServlet extends HttpServlet {
 
                         int rows = insertStmt.executeUpdate();
                         if (rows > 0) {
-                            // 🔹 Trigger email after inserting new attendance
-                            sendAttendanceEmails(studentId, status);
+                            // ✅ Check if attendance falls below 75% and trigger email
+                            if (isAttendanceBelowThreshold(conn, studentId)) {
+                                AttendanceNotifier.sendAttendanceEmails();
+                            }
                             out.println("<script>alert('Attendance marked successfully: " + status + "'); window.history.back();</script>");
                         } else {
                             out.println("<script>alert('Failed to mark attendance.'); window.history.back();</script>");
@@ -111,16 +112,20 @@ public class AttendanceServlet extends HttpServlet {
         }
     }
 
-    // 🔹 Email Notification Method
-    private void sendAttendanceEmails(int studentId, String status) {
-        // Implement your email sending logic here
-        System.out.println("📧 Sending email for student ID: " + studentId + " | Status: " + status);
-
-        // Sample Logic (Replace with actual email sending code)
-        if (status.equalsIgnoreCase("absent")) {
-            System.out.println("⚠ Alert: Student ID " + studentId + " was marked Absent. Sending email...");
-        } else {
-            System.out.println("✅ Student ID " + studentId + " is present.");
+    // 🔹 Check if student's attendance falls below 75%
+    private boolean isAttendanceBelowThreshold(Connection conn, int studentId) {
+        String query = "SELECT (COUNT(CASE WHEN status = 'Present' THEN 1 END) * 100.0 / COUNT(*)) AS percentage " +
+                "FROM attendance WHERE student_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, studentId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                double percentage = rs.getDouble("percentage");
+                return percentage < 75; // Return true if below 75%
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+        return false;
     }
 }
