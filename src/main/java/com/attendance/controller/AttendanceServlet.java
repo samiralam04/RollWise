@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/attendance")
-
 public class AttendanceServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
@@ -39,12 +38,6 @@ public class AttendanceServlet extends HttpServlet {
         String date = request.getParameter("date");
         String status = request.getParameter("status");
         String teacherIdStr = request.getParameter("teacher_id");
-
-        System.out.println("Received values:");
-        System.out.println("student_id: " + studentIdStr);
-        System.out.println("date: " + date);
-        System.out.println("status: " + status);
-        System.out.println("teacher_id: " + teacherIdStr);
 
         if (studentIdStr == null || date == null || status == null || teacherIdStr == null ||
                 studentIdStr.trim().isEmpty() || date.trim().isEmpty() || status.trim().isEmpty() || teacherIdStr.trim().isEmpty()) {
@@ -72,12 +65,11 @@ public class AttendanceServlet extends HttpServlet {
                     String currentStatus = rs.getString("status");
 
                     if (currentStatus.equalsIgnoreCase(status)) {
-                        // If teacher tries to mark the same status twice, show an alert
-                        out.println("<script>alert('Attendance is already marked as " + status + " for this date. You can only toggle status.'); window.back();</script>");
+                        out.println("<script>alert('Attendance is already marked as " + status + " for this date.'); window.history.back();</script>");
                         return;
                     }
 
-                    // Update the status (toggle Present <-> Absent)
+                    // Update the status
                     String updateQuery = "UPDATE attendance SET status = ?, recorded_at = NOW() WHERE student_id = ? AND date = ?";
                     try (PreparedStatement updateStmt = conn.prepareStatement(updateQuery)) {
                         updateStmt.setString(1, status);
@@ -86,13 +78,15 @@ public class AttendanceServlet extends HttpServlet {
 
                         int rows = updateStmt.executeUpdate();
                         if (rows > 0) {
-                            out.println("<script>alert('Attendance updated successfully: " + status + "'); window.back()';</script>");
+                            // 🔹 Trigger email after updating attendance
+                            sendAttendanceEmails(studentId, status);
+                            out.println("<script>alert('Attendance updated successfully: " + status + "'); window.history.back();</script>");
                         } else {
-                            out.println("<script>alert('Failed to update attendance.'); window.back();</script>");
+                            out.println("<script>alert('Failed to update attendance.'); window.history.back();</script>");
                         }
                     }
                 } else {
-                    // Insert a new attendance record
+                    // Insert new attendance record
                     String insertQuery = "INSERT INTO attendance (student_id, date, status, recorded_at, teacher_id) VALUES (?, ?, ?, NOW(), ?)";
                     try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
                         insertStmt.setInt(1, studentId);
@@ -102,16 +96,31 @@ public class AttendanceServlet extends HttpServlet {
 
                         int rows = insertStmt.executeUpdate();
                         if (rows > 0) {
-                            out.println("<script>alert('Attendance marked successfully: " + status + "'); window.back();</script>");
+                            // 🔹 Trigger email after inserting new attendance
+                            sendAttendanceEmails(studentId, status);
+                            out.println("<script>alert('Attendance marked successfully: " + status + "'); window.history.back();</script>");
                         } else {
-                            out.println("<script>alert('Failed to mark attendance.'); window.back();</script>");
+                            out.println("<script>alert('Failed to mark attendance.'); window.history.back();</script>");
                         }
                     }
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            out.println("<script>alert('Error saving attendance: " + e.getMessage() + "'); window.back();</script>");
+            out.println("<script>alert('Error saving attendance: " + e.getMessage() + "'); window.history.back();</script>");
+        }
+    }
+
+    // 🔹 Email Notification Method
+    private void sendAttendanceEmails(int studentId, String status) {
+        // Implement your email sending logic here
+        System.out.println("📧 Sending email for student ID: " + studentId + " | Status: " + status);
+
+        // Sample Logic (Replace with actual email sending code)
+        if (status.equalsIgnoreCase("absent")) {
+            System.out.println("⚠ Alert: Student ID " + studentId + " was marked Absent. Sending email...");
+        } else {
+            System.out.println("✅ Student ID " + studentId + " is present.");
         }
     }
 }

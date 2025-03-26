@@ -7,6 +7,8 @@ import java.util.*;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.*;
+
+import com.attendance.service.AttendanceNotifier;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.util.Date;
@@ -114,9 +116,12 @@ public class UploadExcelServlet extends HttpServlet {
             pstmtAttendance.executeBatch();
             conn.commit(); // Commit transaction
 
+            AttendanceNotifier.sendAttendanceEmails();
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
             response.getWriter().write("{\"success\": true, \"message\": \"Data uploaded successfully.\"}");
+
+
 
         } catch (Exception e) {
             e.printStackTrace();
