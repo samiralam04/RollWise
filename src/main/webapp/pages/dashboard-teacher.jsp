@@ -3,25 +3,26 @@
 <%@ page import="java.sql.*, java.util.*" %>
 
 <%
-    // Get user session attributes
     String userType = (String) session.getAttribute("role");
     String userEmail = (String) session.getAttribute("email");
 
-    // Redirect if user is not logged in or not a teacher
     if (userEmail == null || !"teacher".equals(userType)) {
         response.sendRedirect("login.jsp");
         return;
     }
 
-    // Database connection retrieval
     Connection conn = (Connection) application.getAttribute("DBConnection");
-    int totalStudents = 0;
 
+    List<Map<String, String>> attendanceRecords = new ArrayList<>();
     if (conn != null) {
-        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) AS total FROM students");
+        try (PreparedStatement ps = conn.prepareStatement("SELECT student_id, date, status FROM attendance ORDER BY date DESC");
              ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                totalStudents = rs.getInt("total");
+            while (rs.next()) {
+                Map<String, String> record = new HashMap<>();
+                record.put("student_id", rs.getString("student_id"));
+                record.put("date", rs.getString("date"));
+                record.put("status", rs.getString("status"));
+                attendanceRecords.add(record);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -38,10 +39,39 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 9999;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+        .loading-message {
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
 </head>
 <body>
+    <div class="loading-overlay" id="loadingSpinner">
+        <div class="spinner-border text-primary" role="status"></div>
+        <div class="loading-message" id="loadingMessage">Processing...</div>
+    </div>
+
     <div class="container mt-4">
-        <!-- Logout Button -->
         <div class="text-end mb-3">
             <a href="logout.jsp" class="btn btn-danger">Logout</a>
         </div>
@@ -49,7 +79,6 @@
         <h2 class="text-center">Teacher Dashboard</h2>
 
         <div class="row">
-            <!-- Attendance Upload Section -->
             <div class="col-md-6">
                 <div class="card p-3">
                     <h4>Upload Attendance</h4>
@@ -60,7 +89,6 @@
                 </div>
             </div>
 
-            <!-- Attendance Marking Section -->
             <div class="col-md-6">
                 <div class="card p-3">
                     <h4>Mark Attendance Manually</h4>
@@ -77,7 +105,7 @@
                         </div>
                         <div class="mb-2">
                             <label>Date</label>
-                            <input type="date" name="date" class="form-control" id="attendanceDate" required>
+                            <input type="date" name="date" class="form-control" required>
                         </div>
                         <div class="mb-2">
                             <label>Status</label>
@@ -92,7 +120,7 @@
             </div>
         </div>
 
-        <!-- Attendance Report Table -->
+        <!-- Attendance Table -->
         <div class="card p-3 mt-4">
             <h4>Student Attendance Report</h4>
             <table class="table table-bordered">
@@ -148,53 +176,92 @@
             </table>
         </div>
 
-        <!-- Download Report Button -->
-        <div class="text-center mt-3">
-            <a href="<%= request.getContextPath() %>/downloadReport" class="btn btn-secondary">Download Report</a>
-        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
-        // Prevent selecting future dates
-        document.addEventListener("DOMContentLoaded", function () {
-            let today = new Date().toISOString().split('T')[0];
-            document.getElementById("attendanceDate").setAttribute("max", today);
-        });
+        function showLoading(message) {
+            document.getElementById("loadingSpinner").style.display = "flex";
+            document.getElementById("loadingMessage").innerText = message;
+        }
 
-        // Show success popup instead of redirecting
-        document.getElementById("attendanceForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            Swal.fire({
-                icon: "success",
-                title: "Attendance Marked",
-                text: "Attendance has been successfully marked!",
-                confirmButtonText: "OK"
-            }).then(() => {
-                this.submit();
-            });
-        });
+        function hideLoading() {
+            document.getElementById("loadingSpinner").style.display = "none";
+        }
 
-        // File upload alert
         document.getElementById("uploadForm").addEventListener("submit", function(event) {
             event.preventDefault();
+            showLoading(" Attendance is being uploaded...");
 
-            let formData = new FormData(this);
-
-            fetch("<%= request.getContextPath() %>/UploadExcelServlet", {
-                method: "POST",
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                Swal.fire({
-                    icon: data.success ? "success" : "error",
-                    title: data.success ? "Upload Successful" : "Upload Failed",
-                    text: data.message || "Something went wrong",
-                    confirmButtonText: "OK"
+            const formData = new FormData(this);
+            fetch(this.action, { method: "POST", body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    hideLoading();
+                    if (data.success) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Success",
+                            text: data.message,
+                            confirmButtonColor: "#3085d6",
+                        }).then(() => {
+                            location.reload(); // Refresh table after upload
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: "Failed to upload attendance.",
+                            confirmButtonColor: "#d33",
+                        });
+                    }
+                })
+                .catch(error => {
+                    hideLoading();
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Something went wrong!",
+                        confirmButtonColor: "#d33",
+                    });
                 });
-            });
+        });
+
+        document.getElementById("attendanceForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            showLoading("Marking Attendance...");
+
+            const formData = new FormData(this);
+            fetch(this.action, { method: "POST", body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    hideLoading();
+                    if (data.success) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Success",
+                            text: data.message,
+                            confirmButtonColor: "#3085d6",
+                        }).then(() => {
+                            location.reload(); // Refresh table after marking attendance
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: "Failed to mark attendance.",
+                            confirmButtonColor: "#d33",
+                        });
+                    }
+                })
+                .catch(error => {
+                    hideLoading();
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Something went wrong!",
+                        confirmButtonColor: "#d33",
+                    });
+                });
         });
     </script>
 </body>
