@@ -37,6 +37,7 @@
     <title>Teacher Dashboard</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <div class="container mt-4">
@@ -63,7 +64,7 @@
             <div class="col-md-6">
                 <div class="card p-3">
                     <h4>Mark Attendance Manually</h4>
-                    <form action="<%= request.getContextPath() %>/attendance" method="post" onsubmit="return showSuccessPopup()">
+                    <form id="attendanceForm" action="<%= request.getContextPath() %>/attendance" method="post">
                         <div class="row">
                             <div class="col-md-6 mb-2">
                                 <label>Student ID</label>
@@ -114,7 +115,7 @@
                                    "COUNT(a.student_id) OVER (PARTITION BY a.student_id) AS total_classes, " +
                                    "SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) OVER (PARTITION BY a.student_id) AS attended_classes " +
                                    "FROM attendance a " +
-                                   "LEFT JOIN parents p ON a.parent_email_id = p.id " +  // Fixed join condition
+                                   "LEFT JOIN parents p ON a.parent_email_id = p.id " +
                                    "ORDER BY a.date DESC"
                            );
                                 ResultSet rs = ps.executeQuery()) {
@@ -163,43 +164,38 @@
         });
 
         // Show success popup instead of redirecting
-        function showSuccessPopup() {
-            alert("Attendance marked successfully!");
-            return true;
-        }
-    </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <script>
-    document.getElementById("uploadForm").addEventListener("submit", function(event) {
-        event.preventDefault();
-
-        let formData = new FormData(this);
-
-        fetch("<%= request.getContextPath() %>/UploadExcelServlet", {
-            method: "POST",
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
+        document.getElementById("attendanceForm").addEventListener("submit", function(event) {
+            event.preventDefault();
             Swal.fire({
-                icon: data.success ? "success" : "error",
-                title: data.success ? "Upload Successful" : "Upload Failed",
-                text: data.message || "Something went wrong",
+                icon: "success",
+                title: "Attendance Marked",
+                text: "Attendance has been successfully marked!",
                 confirmButtonText: "OK"
-            });
-        })
-        .catch(() => {
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Something went wrong while uploading.",
-                confirmButtonText: "Close"
+            }).then(() => {
+                this.submit();
             });
         });
-    });
-    </script>
 
+        // File upload alert
+        document.getElementById("uploadForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            let formData = new FormData(this);
+
+            fetch("<%= request.getContextPath() %>/UploadExcelServlet", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.fire({
+                    icon: data.success ? "success" : "error",
+                    title: data.success ? "Upload Successful" : "Upload Failed",
+                    text: data.message || "Something went wrong",
+                    confirmButtonText: "OK"
+                });
+            });
+        });
+    </script>
 </body>
 </html>
