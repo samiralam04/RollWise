@@ -37,4 +37,12 @@ public class EmailNotifier {
             System.out.println("❌ Error sending email: " + e.getMessage());
         }
     }
+
+    public static void sendAlertToParents(List<String> parentEmails, String alertMessage) {
+        String subject = "🚨 Emergency Alert Notification 🚨";
+        String body = "Dear Parent,\n\nAn emergency alert has been issued:\n" + alertMessage +
+                "\n\nPlease take necessary actions.\n\nBest regards,\nSchool Administration";
+
+        send(parentEmails, subject, body);
+    }
 }

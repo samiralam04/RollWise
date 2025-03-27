@@ -13,7 +13,22 @@
 
     Connection conn = (Connection) application.getAttribute("DBConnection");
 
-    // Fetching existing emergency notices
+    // Check if a delete request is made
+    String deleteId = request.getParameter("deleteId");
+    if (deleteId != null && "admin".equals(userType)) {
+        try {
+            PreparedStatement deleteStmt = conn.prepareStatement("DELETE FROM emergency WHERE id = ?");
+            deleteStmt.setInt(1, Integer.parseInt(deleteId));
+            deleteStmt.executeUpdate();
+            deleteStmt.close();
+            response.sendRedirect("emergency.jsp"); // Refresh the page after deletion
+            return;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Fetch existing emergency notices
     PreparedStatement ps = conn.prepareStatement("SELECT * FROM emergency ORDER BY date DESC");
     ResultSet rs = ps.executeQuery();
 %>
@@ -26,8 +41,30 @@
     <title>Emergency Alerts</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        /* Loading Screen Styles */
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            z-index: 9999;
+            display: none;
+        }
+    </style>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div id="loadingOverlay">Sending Alert... Please Wait</div>
+
     <div class="container mt-4">
         <h2 class="text-center">Emergency Alerts</h2>
 
@@ -35,7 +72,7 @@
         <!-- Admin can declare new emergency -->
         <div class="card p-3 mb-4">
             <h4>Declare Emergency Holiday</h4>
-            <form action="${pageContext.request.contextPath}/emergency" method="post">
+            <form action="${pageContext.request.contextPath}/emergency" method="post" onsubmit="showLoading()">
                 <div class="mb-2">
                     <label>Reason</label>
                     <input type="text" name="title" class="form-control" placeholder="e.g., Heavy Rain, Flood" required>
@@ -62,6 +99,9 @@
                         <th>Reason</th>
                         <th>Description</th>
                         <th>Date</th>
+                        <% if ("admin".equals(userType)) { %>
+                            <th>Action</th>
+                        <% } %>
                     </tr>
                 </thead>
                 <tbody>
@@ -70,6 +110,12 @@
                         <td><%= rs.getString("title") != null ? rs.getString("title") : "N/A" %></td>
                         <td><%= rs.getString("description") != null ? rs.getString("description") : "N/A" %></td>
                         <td><%= rs.getDate("date") != null ? rs.getDate("date") : "N/A" %></td>
+                        <% if ("admin".equals(userType)) { %>
+                        <td>
+                            <a href="emergency.jsp?deleteId=<%= rs.getInt("id") %>" class="btn btn-sm btn-danger"
+                               onclick="return confirm('Are you sure you want to delete this alert?');">Delete</a>
+                        </td>
+                        <% } %>
                     </tr>
                     <% } rs.close(); ps.close(); %>
                 </tbody>
@@ -82,5 +128,11 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function showLoading() {
+            document.getElementById("loadingOverlay").style.display = "flex";
+        }
+    </script>
 </body>
 </html>

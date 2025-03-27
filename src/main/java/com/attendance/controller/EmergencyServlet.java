@@ -1,18 +1,20 @@
 package com.attendance.controller;
 
+import com.attendance.service.EmailNotifier;
 import com.attendance.util.DBConnection;
+import com.attendance.service.EmailNotifier;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Date;
+import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,7 +48,7 @@ public class EmergencyServlet extends HttpServlet {
             return;
         }
 
-        // Insert data into database
+        // Database connection
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
                      "INSERT INTO emergency (title, description, date) VALUES (?, ?, ?)")) {
@@ -55,6 +57,27 @@ public class EmergencyServlet extends HttpServlet {
             stmt.setString(2, description);
             stmt.setDate(3, sqlDate);
             stmt.executeUpdate();
+
+            // Fetch all parent emails from the parents table
+            List<String> parentEmails = new ArrayList<>();
+            String fetchParentEmailsQuery = "SELECT parent_email FROM parents";
+            try (PreparedStatement emailStmt = conn.prepareStatement(fetchParentEmailsQuery);
+                 ResultSet rs = emailStmt.executeQuery()) {
+                while (rs.next()) {
+                    parentEmails.add(rs.getString("parent_email"));
+                }
+            }
+
+            // Send emergency alert email to all parents
+            if (!parentEmails.isEmpty()) {
+                String emailSubject = "🚨 Emergency Alert: " + title + " 🚨";
+                String emailBody = "Dear Parent,\n\nAn emergency alert has been issued:\n\n"
+                        + title + "\n" + description
+                        + "\n\nDate: " + dateString
+                        + "\n\nPlease take necessary actions.\n\nBest regards,\nSchool Administration";
+
+                EmailNotifier.sendAlertToParents(parentEmails, emailBody);
+            }
 
             // Redirect with success message
             response.sendRedirect(request.getContextPath() + "/pages/emergency.jsp?success=Emergency%20holiday%20added");
