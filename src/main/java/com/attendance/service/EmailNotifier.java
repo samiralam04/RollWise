@@ -5,7 +5,7 @@ import javax.mail.*;
 import javax.mail.internet.*;
 
 public class EmailNotifier {
-    private static final String EMAIL_FROM = "your@gmail.com"; // Replace with your Gmail
+    private static final String EMAIL_FROM = "your_email@gmail.com"; // Replace with your Gmail
     private static final String APP_PASSWORD ="your_password"; // Replace with your generated App Password
 
     public static void send(List<String> recipients, String subject, String body) {
@@ -40,8 +40,18 @@ public class EmailNotifier {
 
     public static void sendAlertToParents(List<String> parentEmails, String alertMessage) {
         String subject = "🚨 Emergency Alert Notification 🚨";
-        String body = "Dear Parent,\n\nAn emergency alert has been issued:\n" + alertMessage +
-                "\n\nPlease take necessary actions.\n\nBest regards,\nSchool Administration";
+        String body = "Dear Parent,\n\nAn emergency alert has been issued:\n"
+                + alertMessage +
+                "\n\nPlease take necessary actions.\n\nBest regards,\nCollege Administration";
+
+        send(parentEmails, subject, body);
+    }
+
+    public static void sendHolidayNotification(List<String> parentEmails, String dateStr, String reason) {
+        String subject = "📢 Holiday Announcement: " + reason;
+        String body = "Dear Parent,\n\nWe are pleased to inform you that there will be a holiday on:\n\n" +
+                "📅 Date: " + dateStr + "\n📌 Reason: " + reason +
+                "\n\nEnjoy your day!\n\nBest Regards,\nCollege Administration";
 
         send(parentEmails, subject, body);
     }
