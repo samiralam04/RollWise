@@ -23,7 +23,7 @@ The Student Attendance Management System is a web-based application designed to 
 - Automatically send warning emails to parents if attendance falls below 75%.
 
 ### Student/Parent Section
-![Student Dashboard](student.png)
+![Student Dashboard](Student.png)
 
 - Login and Register as Student or Parent.
 - View attendance records.
