@@ -5,8 +5,8 @@ import javax.mail.*;
 import javax.mail.internet.*;
 
 public class EmailNotifier {
-    private static final String EMAIL_FROM = "samiralam7005@gmail.com"; // Replace with your Gmail
-    private static final String APP_PASSWORD = "jhpb seci cbeg yfbb"; // Replace with your generated App Password
+    private static final String EMAIL_FROM = "your@gmail.com"; // Replace with your Gmail
+    private static final String APP_PASSWORD ="your_password"; // Replace with your generated App Password
 
     public static void send(List<String> recipients, String subject, String body) {
         Properties props = new Properties();
