@@ -30,12 +30,12 @@ The Student Attendance Management System is a web-based application designed to 
 - Receive email notifications for holidays, alerts, and low attendance warnings.
 
 ## Technologies Used
-- **Backend:** Java, Servlet, JSP
-- **Server:** Tomcat 9
-- **Frontend:** HTML, CSS, Bootstrap, AJAX
-- **Database:** PostgreSQL
-- **Version Control:** GitHub
-- **Security:** Password Hashing, Session Management
+- **Backend:** [Java](https://www.oracle.com/java/), [Servlet](https://docs.oracle.com/javaee/7/tutorial/servlets.htm), [JSP](https://docs.oracle.com/javaee/7/tutorial/jsf-intro.htm)
+- **Server:** [Tomcat 9](http://tomcat.apache.org/)
+- **Frontend:** [HTML](https://developer.mozilla.org/en-US/docs/Web/HTML), [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS), [Bootstrap](https://getbootstrap.com/), [AJAX](https://developer.mozilla.org/en-US/docs/Web/Guide/AJAX)
+- **Database:** [PostgreSQL](https://www.postgresql.org/)
+- **Version Control:** [GitHub](https://github.com/)
+- **Security:** [Password Hashing](https://www.baeldung.com/java-password-hashing), [Session Management](https://docs.oracle.com/javaee/7/tutorial/servletsession.html)
 
 ## Installation and Setup
 1. Clone the repository:
@@ -60,6 +60,7 @@ Contributions are welcome! Feel free to open issues or submit pull requests.
 
 ## License
 This project is licensed under the MIT License.
+© 2025 Samir Alam. All rights reserved.
 
 ## Contact
 Developed by Samir Alam, 2025.
