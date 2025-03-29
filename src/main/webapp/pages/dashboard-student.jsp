@@ -157,7 +157,7 @@
         </div>
 
         <!-- Logout Button -->
-        <div class="text-center mb-3">
+        <div class="text-center mb-3"style="padding-top: 20px;">
             <a href="logout.jsp" class="btn btn-danger">Logout</a>
         </div>
     </div>
