@@ -34,7 +34,8 @@ public class AttendanceNotifier {
 
                 while (rs.next()) {
                     int studentId = rs.getInt("student_id");
-                    double percentage = rs.getDouble("percentage");
+                    double percentage = Math.round(rs.getDouble("percentage") * 100.0) / 100.0;
+
                     String parentEmail = rs.getString("parent_email");
 
                     System.out.println("\n📌 Found student with low attendance:");
