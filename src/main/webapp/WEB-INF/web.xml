@@ -8,15 +8,6 @@
 
   <!-- Servlets and Mappings -->
   <servlet>
-    <servlet-name>DownloadReportServlet</servlet-name>
-    <servlet-class>com.attendance.controller.DownloadReportServlet</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>DownloadReportServlet</servlet-name>
-    <url-pattern>/downloadReport</url-pattern>
-  </servlet-mapping>
-
-  <servlet>
     <servlet-name>RegisterServlet</servlet-name>
     <servlet-class>com.attendance.controller.RegisterServlet</servlet-class>
   </servlet>
