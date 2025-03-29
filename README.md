@@ -40,7 +40,7 @@ The Student Attendance Management System is a web-based application designed to 
 ## Installation and Setup
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/student-attendance-management.git
+   git clone https://github.com/yourusername/StudentAttendanceManagementSystem.git
    ```
 2. Import the project into your IDE (e.g., Eclipse or IntelliJ).
 3. Set up PostgreSQL and configure the database connection in `web.xml`.
@@ -62,6 +62,6 @@ Contributions are welcome! Feel free to open issues or submit pull requests.
 This project is licensed under the MIT License.
 
 ## Contact
-Developed by Samir Alam, 2024.
+Developed by Samir Alam, 2025.
 Feel free to reach out for suggestions or collaborations.
 
