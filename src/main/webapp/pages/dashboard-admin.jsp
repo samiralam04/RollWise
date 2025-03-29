@@ -62,7 +62,7 @@
 
         <!-- Main Content -->
         <div class="container-fluid p-4">
-            <h2>Welcome, <%= adminName %> 🧑‍💼 </h2>
+            <h2>Welcome, <%= adminName %> 🧑‍💼</h2>
             <div class="row">
                 <div class="col-md-4">
                     <div class="card shadow-sm p-3 text-center">
