@@ -34,8 +34,36 @@
     <title>Manage Holidays</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <style>
+        /* Loading Screen Styles */
+        #loadingScreen {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+    </style>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen">
+        <div class="d-flex flex-column justify-content-center align-items-center">
+            <div class="spinner-border text-light" role="status"></div>
+            <p class="mt-3">Sending holiday mail and adding holiday, please wait...</p>
+        </div>
+    </div>
+
     <div class="container mt-4">
         <h2 class="text-center">Holiday Management</h2>
 
@@ -59,7 +87,7 @@
         <% if ("admin".equals(userType)) { %>
         <div class="card p-3 mb-4">
             <h4>Add New Holiday</h4>
-           <form action="<%= request.getContextPath() %>/HolidayServlet" method="post">
+            <form action="<%= request.getContextPath() %>/HolidayServlet" method="post" onsubmit="showLoading()">
                 <div class="mb-2">
                     <label>Holiday Reason</label>
                     <input type="text" name="reason" class="form-control" placeholder="e.g., Diwali, Christmas" required>
@@ -97,7 +125,7 @@
                         <% if ("admin".equals(userType)) { %>
                         <td>
                             <button class="btn btn-danger btn-sm" onclick="confirmDelete('<%= holidayDate %>')">
-                                <i class="bi bi-trash"></i>
+                                <i class="bi bi-trash"></i> Delete
                             </button>
                         </td>
                         <% } %>
@@ -137,6 +165,10 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function showLoading() {
+            document.getElementById("loadingScreen").style.display = "flex";
+        }
+
         function confirmDelete(date) {
             document.getElementById("deleteDate").value = date;
             var deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));

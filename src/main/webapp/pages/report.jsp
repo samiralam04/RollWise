@@ -62,9 +62,7 @@
         </div>
 
         <div class="text-center mt-3">
-            <form action="<%= request.getContextPath() %> /DownloadReportServlet" method="post">
-                <button type="submit" class="btn btn-success">Download Report as Excel</button>
-            </form>
+
             <a href="<%= "admin".equals(userRole) ? "dashboard-admin.jsp" : ("teacher".equals(userRole) ? "dashboard-teacher.jsp" : "dashboard-student.jsp") %>" class="btn btn-primary mt-2">Back to Dashboard</a>
         </div>
     </div>
