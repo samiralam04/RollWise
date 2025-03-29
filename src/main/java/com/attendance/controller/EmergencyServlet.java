@@ -70,14 +70,13 @@ public class EmergencyServlet extends HttpServlet {
 
             // Send emergency alert email to all parents
             if (!parentEmails.isEmpty()) {
-                String emailSubject = "🚨 Emergency Alert: " + title + " 🚨";
-                String emailBody = "Dear Parent,\n\nAn emergency alert has been issued:\n\n"
-                        + title + "\n" + description
-                        + "\n\nDate: " + dateString
-                        + "\n\nPlease take necessary actions.\n\nBest regards,\nSchool Administration";
+                String alertMessage = "Title: " + title + "\n"
+                        + "Description: " + description + "\n"
+                        + "Date: " + dateString;
 
-                EmailNotifier.sendAlertToParents(parentEmails, emailBody);
+                EmailNotifier.sendAlertToParents(parentEmails, alertMessage);
             }
+
 
             // Redirect with success message
             response.sendRedirect(request.getContextPath() + "/pages/emergency.jsp?success=Emergency%20holiday%20added");

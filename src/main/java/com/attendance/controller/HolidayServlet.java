@@ -1,6 +1,7 @@
 package com.attendance.controller;
 
 import com.attendance.util.DBConnection;
+import com.attendance.service.EmailNotifier;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -19,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 
 @WebServlet("/HolidayServlet")
 public class HolidayServlet extends HttpServlet {
@@ -51,7 +51,6 @@ public class HolidayServlet extends HttpServlet {
             Date sqlDate = new Date(parsedDate.getTime());
 
             try (Connection conn = DBConnection.getConnection()) {
-                // Check if holiday already exists
                 String checkQuery = "SELECT COUNT(*) FROM holiday WHERE \"date\" = ?";
                 try (PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
                     checkStmt.setDate(1, sqlDate);
@@ -63,7 +62,6 @@ public class HolidayServlet extends HttpServlet {
                     }
                 }
 
-                // Insert holiday
                 String insertQuery = "INSERT INTO holiday (\"date\", reason) VALUES (?, ?)";
                 try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
                     stmt.setDate(1, sqlDate);
@@ -71,7 +69,22 @@ public class HolidayServlet extends HttpServlet {
                     stmt.executeUpdate();
                 }
 
-                request.setAttribute("success", "Holiday added successfully.");
+                List<String> parentEmails = new ArrayList<>();
+                String fetchParentEmailsQuery = "SELECT parent_email FROM parents";
+                try (PreparedStatement emailStmt = conn.prepareStatement(fetchParentEmailsQuery);
+                     ResultSet rs = emailStmt.executeQuery()) {
+                    while (rs.next()) {
+                        parentEmails.add(rs.getString("parent_email"));
+                    }
+                }
+
+                if (!parentEmails.isEmpty()) {
+                    EmailNotifier.sendHolidayNotification(parentEmails, dateStr, reason);
+                    LOGGER.log(Level.INFO, "Holiday notification sent to parents.");
+                }
+
+
+                request.setAttribute("success", "Holiday added successfully and notification sent.");
             }
         } catch (ParseException e) {
             LOGGER.log(Level.SEVERE, "Invalid date format: " + dateStr, e);
