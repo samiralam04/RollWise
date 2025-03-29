@@ -6,7 +6,7 @@ The Student Attendance Management System is a web-based application designed to 
 ## Features
 
 ### Admin Section
-![Admin Dashboard](screenshots/admin_dashboard.png)
+![Admin Dashboard](Admin.png)
 
 - Login and Register as Admin.
 - Add or remove teachers.
@@ -15,7 +15,7 @@ The Student Attendance Management System is a web-based application designed to 
 - Automatically send holiday and alert notifications to parents' emails.
 
 ### Teacher Section
-![Teacher Dashboard](screenshots/teacher_dashboard.png)
+![Teacher Dashboard](Teacher.png)
 
 - Login and Register as Teacher.
 - Upload attendance via Excel file or mark attendance manually.
@@ -23,7 +23,7 @@ The Student Attendance Management System is a web-based application designed to 
 - Automatically send warning emails to parents if attendance falls below 75%.
 
 ### Student/Parent Section
-![Student Dashboard](screenshots/student_dashboard.png)
+![Student Dashboard](student.png)
 
 - Login and Register as Student or Parent.
 - View attendance records.
