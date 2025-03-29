@@ -4,7 +4,10 @@
 The Student Attendance Management System is a web-based application designed to streamline attendance tracking and management in educational institutions. It features three user roles: **Admin**, **Teacher**, and **Student/Parent**. Each role has unique access permissions and functionalities to enhance efficiency and transparency.
 
 ## Features
+
 ### Admin Section
+![Admin Dashboard](screenshots/admin_dashboard.png)
+
 - Login and Register as Admin.
 - Add or remove teachers.
 - Declare holidays and send emergency alerts.
@@ -12,12 +15,16 @@ The Student Attendance Management System is a web-based application designed to 
 - Automatically send holiday and alert notifications to parents' emails.
 
 ### Teacher Section
+![Teacher Dashboard](screenshots/teacher_dashboard.png)
+
 - Login and Register as Teacher.
 - Upload attendance via Excel file or mark attendance manually.
 - Automatically calculate attendance percentage after uploading Excel file.
 - Automatically send warning emails to parents if attendance falls below 75%.
 
 ### Student/Parent Section
+![Student Dashboard](screenshots/student_dashboard.png)
+
 - Login and Register as Student or Parent.
 - View attendance records.
 - Receive email notifications for holidays, alerts, and low attendance warnings.
@@ -40,7 +47,7 @@ The Student Attendance Management System is a web-based application designed to 
 4. Deploy the project on Tomcat 9 server.
 5. Access the application at:
    ```
-   http://localhost:8080/student-attendance-management
+   http://localhost:8080/StudentAttendanceManagementSystem
    ```
 
 ## Usage Instructions
@@ -55,5 +62,6 @@ Contributions are welcome! Feel free to open issues or submit pull requests.
 This project is licensed under the MIT License.
 
 ## Contact
-Developed by Samir Alam, 2025.
+Developed by Samir Alam, 2024.
 Feel free to reach out for suggestions or collaborations.
+
