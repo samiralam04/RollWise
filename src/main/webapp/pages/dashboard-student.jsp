@@ -3,19 +3,13 @@
 <%@ page import="java.sql.*, java.util.*" %>
 
 <%
-    // Debugging Output
-    System.out.println("Debug: Entering dashboard.jsp");
-
     // Get session values
     String userType = (String) session.getAttribute("role");
     String userEmail = (String) session.getAttribute("email");
-
-    System.out.println("Debug: userType=" + userType);
-    System.out.println("Debug: userEmail=" + userEmail);
+    String userName = (String) session.getAttribute("name");
 
     // Redirect to login if session is invalid or user is not a student
     if (userEmail == null || !"student".equals(userType)) {
-        System.out.println("Debug: Unauthorized access. Redirecting to login.");
         response.sendRedirect("login.jsp");
         return;
     }
@@ -23,8 +17,7 @@
     // Get DB Connection
     Connection conn = (Connection) application.getAttribute("DBConnection");
     if (conn == null) {
-        out.println("<h3 style='color:red;'>Database connection error!</h3>");
-        System.out.println("Debug: Database connection error!");
+        out.println("<h3>Database connection error!</h3>");
         return;
     }
 
@@ -40,28 +33,16 @@
         }
         rs1.close();
         ps1.close();
-
-        System.out.println("Debug: Retrieved studentId = " + studentId);
-
     } catch (Exception e) {
         e.printStackTrace();
-    }
-
-    // If student ID is not found, show an error
-    if (studentId == -1) {
-        out.println("<h3 style='color:red;'>Student not found!</h3>");
-        System.out.println("Debug: Student ID not found for email " + userEmail);
-        return;
     }
 
     // Fetch Attendance Data
     int totalClasses = 0, attendedClasses = 0;
     double attendancePercentage = 0.0;
-
     try {
         PreparedStatement ps2 = conn.prepareStatement(
-            "SELECT COUNT(*) AS total, SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) AS present " +
-            "FROM attendance WHERE student_id = ?");
+            "SELECT COUNT(*) AS total, SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) AS present FROM attendance WHERE student_id = ?");
         ps2.setInt(1, studentId);
         ResultSet rs2 = ps2.executeQuery();
 
@@ -72,11 +53,7 @@
         rs2.close();
         ps2.close();
 
-        // Calculate attendance percentage
         attendancePercentage = (totalClasses > 0) ? (attendedClasses * 100.0 / totalClasses) : 0;
-
-        System.out.println("Debug: Attendance Data - Total: " + totalClasses + ", Attended: " + attendedClasses + ", Percentage: " + attendancePercentage);
-
     } catch (Exception e) {
         e.printStackTrace();
     }
@@ -88,94 +65,188 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/student.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container mt-4">
-        <h2 class="text-center">Student Dashboard</h2>
+    <div class="container">
+        <header class="dashboard-header">
+            <h1 class="welcome-message">Welcome, <%= userName != null ? userName : "Student" %></h1>
+        </header>
 
-        <!-- Attendance Stats -->
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card p-3">
-                    <h4>Attendance Overview</h4>
-                    <p><strong>Student ID:</strong> <%= studentId %></p>
-                    <p><strong>Total Classes:</strong> <%= totalClasses %></p>
-                    <p><strong>Classes Attended:</strong> <%= attendedClasses %></p>
-                    <p><strong>Attendance Percentage:</strong> <%= String.format("%.2f", attendancePercentage) %>%</p>
-
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-title">Attendance Percentage</div>
+                <div class="stat-value"><%= String.format("%.0f", attendancePercentage) %>%</div>
+                <div class="stat-actions">
                     <% if (attendancePercentage < 75) { %>
-                        <p class="text-danger"><strong>⚠ Warning:</strong> Your attendance is below 75%! Please attend classes.</p>
+                        <span class="alert-danger" style="padding: 0.25rem 0.5rem; border-radius: 4px;">
+                            <i class="fas fa-exclamation-circle"></i> Low
+                        </span>
                     <% } else if (attendancePercentage >= 75 && attendancePercentage <= 78) { %>
-                        <p class="text-warning"><strong>⚠ Alert:</strong> Your attendance is nearing 75%! Maintain regular attendance.</p>
+                        <span class="alert-warning" style="padding: 0.25rem 0.5rem; border-radius: 4px;">
+                            <i class="fas fa-exclamation-triangle"></i> Warning
+                        </span>
+                    <% } else { %>
+                        <span style="color: var(--success); padding: 0.25rem 0.5rem; border-radius: 4px;">
+                            <i class="fas fa-check-circle"></i> Good
+                        </span>
                     <% } %>
                 </div>
             </div>
 
-            <div class="col-md-6">
-                <!-- Attendance Chart -->
-                <canvas id="attendanceChart" style="max-width: 550px; max-height: 550px;"></canvas>
+            <div class="stat-card">
+                <div class="stat-title">Classes Attended</div>
+                <div class="stat-value"><%= attendedClasses %></div>
+                <div class="stat-actions">
+                    <span>Out of <%= totalClasses %> total</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-title">Absent Classes</div>
+                <div class="stat-value"><%= totalClasses - attendedClasses %></div>
+                <div class="stat-actions">
+                    <span><%= totalClasses > 0 ? String.format("%.0f", (totalClasses - attendedClasses) * 100.0 / totalClasses) : 0 %>% of total</span>
+                </div>
             </div>
         </div>
 
-        <!-- Attendance Table -->
-        <div class="card p-3 mt-4">
-            <h4>Attendance History</h4>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <%
-                        try {
-                            PreparedStatement ps3 = conn.prepareStatement(
-                                "SELECT date, status FROM attendance WHERE student_id = ? ORDER BY date DESC");
+        <!-- Attendance Section -->
+        <div class="attendance-section">
+            <div class="attendance-card">
+                <h3>Attendance Chart</h3>
+                <div class="chart-container">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+            </div>
+
+            <div class="attendance-card">
+                <h3>Attendance Summary</h3>
+                <% if (attendancePercentage < 75) { %>
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Your attendance is below 75%! Please attend classes.</span>
+                    </div>
+                <% } else if (attendancePercentage >= 75 && attendancePercentage <= 78) { %>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Your attendance is nearing 75%! Maintain regular attendance.</span>
+                    </div>
+                <% } else { %>
+                    <div class="alert" style="background-color: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--success); color: var(--success);">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Your attendance is good! Keep it up.</span>
+                    </div>
+                <% } %>
+                <div class="attendance-percentage"><%= String.format("%.2f", attendancePercentage) %>%</div>
+                <div style="text-align: center; color: var(--secondary);">
+                    <%= attendedClasses %> out of <%= totalClasses %> classes attended
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+                        <div class="activity-card">
+                            <h3>Recent Activity</h3>
+                            <div class="activity-item">
+                                <div class="activity-text">Attendance marked for today</div>
+                                <div class="activity-time">Today</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-text">New notice posted</div>
+                                <div class="activity-time">2 days ago</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-text">Monthly report generated</div>
+                                <div class="activity-time">1 week ago</div>
+                            </div>
+                        </div>
+
+        <!-- Attendance History -->
+        <div class="activity-card" style="margin-top: 2rem; margin-bottom: 2rem;">
+            <h3>Attendance History</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% try {
+                            PreparedStatement ps3 = conn.prepareStatement("SELECT date, status FROM attendance WHERE student_id = ? ORDER BY date DESC LIMIT 10");
                             ps3.setInt(1, studentId);
                             ResultSet rs3 = ps3.executeQuery();
-
-                            while (rs3.next()) {
-                    %>
-                    <tr>
-                        <td><%= rs3.getDate("date") %></td>
-                        <td><%= rs3.getString("status") %></td>
-                    </tr>
-                    <%
-                            }
+                            while (rs3.next()) { %>
+                        <tr>
+                            <td><%= rs3.getDate("date") %></td>
+                            <td><%= rs3.getString("status") %></td>
+                        </tr>
+                        <% }
                             rs3.close();
                             ps3.close();
                         } catch (Exception e) {
                             e.printStackTrace();
-                        }
-                    %>
-                </tbody>
-            </table>
+                        } %>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- Logout Button -->
-        <div class="text-center mb-3"style="padding-top: 20px;">
-            <a href="logout.jsp" class="btn btn-danger">Logout</a>
+        <div class="logout-container">
+            <a href="logout.jsp" class="btn-logout">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
         </div>
     </div>
 
     <script>
         const ctx = document.getElementById('attendanceChart').getContext('2d');
         new Chart(ctx, {
-            type: 'doughnut',
+            type: 'pie',
             data: {
                 labels: ['Present', 'Absent'],
                 datasets: [{
                     data: [<%= attendedClasses %>, <%= totalClasses - attendedClasses %>],
-                    backgroundColor: ['#28a745', '#dc3545']
+                    backgroundColor: [
+                        'rgba(79, 70, 229, 0.8)',
+                        'rgba(239, 68, 68, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(79, 70, 229, 1)',
+                        'rgba(239, 68, 68, 1)'
+                    ],
+                    borderWidth: 1
                 }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                family: 'Inter',
+                                size: 14
+                            }
+                        }
+                    },
+                    tooltip: {
+                        bodyFont: {
+                            family: 'Inter',
+                            size: 14
+                        }
+                    }
+                },
+                cutout: '40%'
             }
         });
     </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
