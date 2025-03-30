@@ -1,6 +1,7 @@
 package com.attendance.controller;
 
 import com.attendance.service.AttendanceNotifier;
+import org.json.JSONObject;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.*;
@@ -28,8 +29,9 @@ public class AttendanceServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setContentType("text/html");
+        response.setContentType("application/json");
         PrintWriter out = response.getWriter();
+        JSONObject jsonResponse = new JSONObject();
 
         String studentIdStr = request.getParameter("student_id");
         String date = request.getParameter("date");
@@ -38,7 +40,9 @@ public class AttendanceServlet extends HttpServlet {
 
         if (studentIdStr == null || date == null || status == null || teacherIdStr == null ||
                 studentIdStr.trim().isEmpty() || date.trim().isEmpty() || status.trim().isEmpty() || teacherIdStr.trim().isEmpty()) {
-            out.println("<script>alert('Invalid input. Please provide student_id, date, status, and teacher_id.'); window.history.back();</script>");
+            jsonResponse.put("success", false);
+            jsonResponse.put("message", "Invalid input. Please provide student_id, date, status, and teacher_id.");
+            out.print(jsonResponse.toString());
             return;
         }
 
@@ -47,7 +51,9 @@ public class AttendanceServlet extends HttpServlet {
             studentId = Integer.parseInt(studentIdStr);
             teacherId = Integer.parseInt(teacherIdStr);
         } catch (NumberFormatException e) {
-            out.println("<script>alert('Invalid student_id or teacher_id format. Must be a number.'); window.history.back();</script>");
+            jsonResponse.put("success", false);
+            jsonResponse.put("message", "Invalid student_id or teacher_id format. Must be a number.");
+            out.print(jsonResponse.toString());
             return;
         }
 
@@ -62,7 +68,9 @@ public class AttendanceServlet extends HttpServlet {
                     String currentStatus = rs.getString("status");
 
                     if (currentStatus.equalsIgnoreCase(status)) {
-                        out.println("<script>alert('Attendance is already marked as " + status + " for this date.'); window.history.back();</script>");
+                        jsonResponse.put("success", false);
+                        jsonResponse.put("message", "Attendance is already marked as " + status + " for this date.");
+                        out.print(jsonResponse.toString());
                         return;
                     }
 
@@ -75,13 +83,16 @@ public class AttendanceServlet extends HttpServlet {
 
                         int rows = updateStmt.executeUpdate();
                         if (rows > 0) {
-                            // ✅ Check if attendance falls below 75% and trigger email
                             if (isAttendanceBelowThreshold(conn, studentId)) {
                                 AttendanceNotifier.sendAttendanceEmails();
                             }
-                            out.println("<script>alert('Attendance updated successfully: " + status + "'); window.history.back();</script>");
+                            jsonResponse.put("success", true);
+                            jsonResponse.put("message", "Attendance updated successfully: " + status);
+                            out.print(jsonResponse.toString());
                         } else {
-                            out.println("<script>alert('Failed to update attendance.'); window.history.back();</script>");
+                            jsonResponse.put("success", false);
+                            jsonResponse.put("message", "Failed to update attendance.");
+                            out.print(jsonResponse.toString());
                         }
                     }
                 } else {
@@ -95,24 +106,29 @@ public class AttendanceServlet extends HttpServlet {
 
                         int rows = insertStmt.executeUpdate();
                         if (rows > 0) {
-                            // ✅ Check if attendance falls below 75% and trigger email
                             if (isAttendanceBelowThreshold(conn, studentId)) {
                                 AttendanceNotifier.sendAttendanceEmails();
                             }
-                            out.println("<script>alert('Attendance marked successfully: " + status + "'); window.history.back();</script>");
+                            jsonResponse.put("success", true);
+                            jsonResponse.put("message", "Attendance marked successfully: " + status);
+                            out.print(jsonResponse.toString());
                         } else {
-                            out.println("<script>alert('Failed to mark attendance.'); window.history.back();</script>");
+                            jsonResponse.put("success", false);
+                            jsonResponse.put("message", "Failed to mark attendance.");
+                            out.print(jsonResponse.toString());
                         }
                     }
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            out.println("<script>alert('Error saving attendance: " + e.getMessage() + "'); window.history.back();</script>");
+            jsonResponse.put("success", false);
+            jsonResponse.put("message", "Error saving attendance: " + e.getMessage());
+            out.print(jsonResponse.toString());
         }
     }
 
-    // 🔹 Check if student's attendance falls below 75%
+    // Check if student's attendance falls below 75%
     private boolean isAttendanceBelowThreshold(Connection conn, int studentId) {
         String query = "SELECT (COUNT(CASE WHEN status = 'Present' THEN 1 END) * 100.0 / COUNT(*)) AS percentage " +
                 "FROM attendance WHERE student_id = ?";
@@ -121,7 +137,7 @@ public class AttendanceServlet extends HttpServlet {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 double percentage = rs.getDouble("percentage");
-                return percentage < 75; // Return true if below 75%
+                return percentage < 75;
             }
         } catch (SQLException e) {
             e.printStackTrace();
