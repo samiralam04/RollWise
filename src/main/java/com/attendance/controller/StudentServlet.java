@@ -3,7 +3,7 @@ package com.attendance.controller;
 import com.attendance.model.Attendance;
 import com.attendance.model.Student;
 import com.attendance.util.DBConnection;
-
+import org.mindrot.jbcrypt.BCrypt;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -20,6 +20,7 @@ import java.util.List;
 @WebServlet("/student")
 public class StudentServlet extends HttpServlet {
 
+    // Handles GET requests for student data and attendance records
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession();
         Integer studentId = (Integer) session.getAttribute("studentId");
@@ -35,7 +36,7 @@ public class StudentServlet extends HttpServlet {
         try (Connection conn = DBConnection.getConnection()) {
             System.out.println("[DEBUG] Database connection established.");
 
-            // Fetch student details
+            // Fetch student details from the database
             String studentQuery = "SELECT id, name, email, phone, parent_phone FROM users WHERE id = ? AND role = 'student'";
             PreparedStatement studentStmt = conn.prepareStatement(studentQuery);
             studentStmt.setInt(1, studentId);
@@ -90,4 +91,39 @@ public class StudentServlet extends HttpServlet {
             response.getWriter().write("Error retrieving student data.");
         }
     }
-}
+    // Handles POST requests to add new students
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String name = request.getParameter("name");
+        String email = request.getParameter("email");
+        String password = request.getParameter("password"); // Get the password
+
+        System.out.println("[DEBUG] Adding new student: " + name + " (" + email + ")");
+
+        try (Connection conn = DBConnection.getConnection()) {
+            if (conn != null) {
+                // Hash the password using BCrypt
+                String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+
+                // SQL query to insert a new student with the "student" role and hashed password
+                String sql = "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, 'student')";
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setString(1, name);
+                ps.setString(2, email);
+                ps.setString(3, hashedPassword); // Save the hashed password
+
+                int result = ps.executeUpdate();
+
+                if (result > 0) {
+                    System.out.println("[DEBUG] Student added successfully.");
+                    response.sendRedirect(request.getContextPath() + "/pages/manage-student.jsp");
+                } else {
+                    System.out.println("[ERROR] Failed to add student.");
+                    response.getWriter().println("Failed to add student.");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("[ERROR] SQL Exception: " + e.getMessage());
+            response.getWriter().write("Error adding student.");
+        }
+    }}

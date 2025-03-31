@@ -1,0 +1,157 @@
+/* Modern Edit Teacher Form Styles */
+:root {
+    --primary-color: #6c5ce7;
+    --primary-light: #a29bfe;
+    --primary-dark: #5649c0;
+    --secondary-color: #7f8c8d;
+    --success-color: #00b894;
+    --warning-color: #fdcb6e;
+    --danger-color: #ff7675;
+    --light-color: #f5f6fa;
+    --dark-color: #2d3436;
+    --gray-color: #dfe6e9;
+    --border-radius: 12px;
+    --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+body.edit-teacher-body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--light-color);
+    color: var(--dark-color);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    background-image:
+        radial-gradient(circle at 10% 20%, rgba(108, 92, 231, 0.05) 0%, rgba(108, 92, 231, 0.05) 90%),
+        radial-gradient(circle at 90% 80%, rgba(0, 184, 148, 0.05) 0%, rgba(0, 184, 148, 0.05) 90%);
+}
+
+.edit-teacher-container {
+    max-width: 550px;
+    width: 100%;
+    padding: 20px;
+}
+
+.edit-teacher-card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.edit-teacher-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.edit-teacher-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+}
+
+.edit-teacher-title {
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 2rem;
+    text-align: center;
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.edit-teacher-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    border-radius: 3px;
+}
+
+.form-field {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.input-group-text {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius) 0 0 var(--border-radius) !important;
+}
+
+.form-control {
+    border: 1px solid var(--gray-color);
+    border-radius: 0 var(--border-radius) var(--border-radius) 0 !important;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.form-control:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 0.25rem rgba(108, 92, 231, 0.25);
+}
+
+.btn-update-teacher {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border: none;
+    padding: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: var(--border-radius);
+    margin-top: 1rem;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-update-teacher:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
+}
+
+.btn-update-teacher::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
+}
+
+.btn-update-teacher:hover::before {
+    left: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 576px) {
+    .edit-teacher-card {
+        padding: 1.5rem;
+    }
+
+    .edit-teacher-title {
+        font-size: 1.5rem;
+    }
+}

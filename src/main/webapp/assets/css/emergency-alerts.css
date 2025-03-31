@@ -1,0 +1,364 @@
+/* emergency-alerts.css - Modernized Version */
+
+/* General page styling with system font stack */
+:root {
+  --primary: #383238;
+  --primary-light: #FF8C5A;
+  --primary-dark:  #4b52d6;
+  --secondary: #004E89;
+  --light: #F7F9FC;
+  --dark: #2D3748;
+  --gray: #718096;
+  --success: #38A169;
+  --warning: #DD6B20;
+  --danger: #E53E3E;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+body.emergency-page {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--light);
+  color: var(--dark);
+  line-height: 1.6;
+}
+
+.emergency-container {
+  max-width: 1200px;
+  padding: 0 1.5rem;
+}
+
+/* Header section with subtle animation */
+.emergency-header {
+  animation: fadeInDown 0.6s ease-out;
+}
+
+.emergency-header h1 {
+  color: var(--primary);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.5rem;
+}
+
+.emergency-header .lead {
+  color: var(--gray);
+  font-weight: 400;
+}
+
+/* Loading overlay with modern spinner */
+.emergency-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(247, 249, 252, 0.95);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(4px);
+}
+
+.loading-content {
+  text-align: center;
+  padding: 2.5rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: var(--card-shadow-hover);
+  transform: scale(1);
+  transition: transform 0.3s ease;
+}
+
+.loading-content:hover {
+  transform: scale(1.02);
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 3rem;
+  height: 3rem;
+  border: 4px solid rgba(255, 107, 53, 0.2);
+  border-radius: 50%;
+  border-top-color: var(--primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+/* Emergency declaration card with modern gradient */
+.emergency-declare-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 2rem;
+}
+
+.emergency-declare-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.emergency-declare-card .card-header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  padding: 1.25rem 1.75rem;
+  color: white;
+  font-weight: 600;
+}
+
+.form-floating label {
+  color: var(--gray);
+  padding: 0.5rem 0.75rem;
+}
+
+.form-control {
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  padding: 0.75rem 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
+}
+
+/* Modern button with subtle hover effect */
+.btn-declare-emergency {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border: none;
+  padding: 0.875rem 2.25rem;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-declare-emergency:hover {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(230, 126, 34, 0.3);
+}
+
+/* Alerts section with modern table design */
+.emergency-alerts-section {
+  margin-top: 2.5rem;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.emergency-alerts-title {
+  color: var(--dark);
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.alerts-count-badge .badge {
+  background-color: var(--primary);
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-weight: 600;
+}
+
+.emergency-alerts-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.emergency-alerts-card:hover {
+  transform: translateY(-2px);
+}
+
+.table-emergency {
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table-emergency thead {
+  background-color: var(--light);
+}
+
+.table-emergency th {
+  font-weight: 600;
+  color: var(--dark);
+  padding: 1.25rem;
+  border-bottom: 2px solid #E2E8F0;
+}
+
+.table-emergency td {
+  padding: 1.25rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #EDF2F7;
+}
+
+.emergency-alert-row {
+  transition: all 0.3s ease;
+}
+
+.emergency-alert-row:last-child td {
+  border-bottom: none;
+}
+
+.emergency-alert-row:hover {
+  background-color: rgba(255, 107, 53, 0.05);
+}
+
+.alert-reason {
+  font-weight: 500;
+  color: var(--dark);
+}
+
+.alert-reason i {
+  color: var(--primary);
+  margin-right: 0.5rem;
+}
+
+/* Modern action buttons */
+.btn-action {
+  border-radius: 8px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.8125rem;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-delete-emergency {
+  background-color: var(--danger);
+  color: white;
+  border: none;
+}
+
+.btn-delete-emergency:hover {
+  background-color: #C53030;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(229, 62, 62, 0.2);
+}
+
+/* Back button with icon */
+.btn-back-dashboard {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: white;
+  color: var(--dark);
+  border: 1px solid #E2E8F0;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-back-dashboard:hover {
+  background-color: #F7FAFC;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-color: #CBD5E0;
+}
+
+/* Status badges */
+.status-badge {
+  padding: 0.375rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-active {
+  background-color: rgba(56, 161, 105, 0.1);
+  color: var(--success);
+}
+
+.status-pending {
+  background-color: rgba(221, 107, 32, 0.1);
+  color: var(--warning);
+}
+
+.status-resolved {
+  background-color: rgba(113, 128, 150, 0.1);
+  color: var(--gray);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments with mobile-first approach */
+@media (min-width: 768px) {
+  .emergency-container {
+    padding: 0 2rem;
+  }
+
+  .emergency-header h1 {
+    font-size: 2.25rem;
+  }
+
+  .emergency-alerts-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .table-emergency thead {
+    display: none;
+  }
+
+  .table-emergency tr {
+    display: block;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .table-emergency td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #EDF2F7;
+  }
+
+  .table-emergency td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--gray);
+    margin-right: 1rem;
+  }
+
+  .btn-action {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+}

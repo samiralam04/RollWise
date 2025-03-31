@@ -1,0 +1,239 @@
+/* Modern Teacher Management Dashboard Styles */
+:root {
+    --primary-color: #6c5ce7;
+    --primary-light: #a29bfe;
+    --primary-dark: #5649c0;
+    --secondary-color: #7f8c8d;
+    --success-color: #00b894;
+    --warning-color: #fdcb6e;
+    --danger-color: #ff7675;
+    --light-color: #f5f6fa;
+    --dark-color: #2d3436;
+    --gray-color: #dfe6e9;
+    --border-radius: 12px;
+    --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+body.teacher-management-body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    background-image:
+        radial-gradient(circle at 10% 20%, rgba(108, 92, 231, 0.05) 0%, rgba(108, 92, 231, 0.05) 90%),
+        radial-gradient(circle at 90% 80%, rgba(0, 184, 148, 0.05) 0%, rgba(0, 184, 148, 0.05) 90%);
+    min-height: 100vh;
+}
+
+.teacher-management-container {
+    max-width: 1200px;
+}
+
+/* Header Styles */
+.teacher-management-header h1 {
+    color: var(--primary-color);
+    position: relative;
+    display: inline-block;
+}
+
+.teacher-management-header h1::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    border-radius: 2px;
+}
+
+/* Card Styles */
+.add-teacher-card, .teacher-list-card {
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.add-teacher-card:hover, .teacher-list-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+}
+
+.bg-gradient-danger {
+    background: linear-gradient(135deg, var(--danger-color), #d63031);
+}
+
+/* Form Styles */
+.form-floating {
+    position: relative;
+}
+
+.form-floating .form-control {
+    height: calc(3.5rem + 2px);
+    padding: 1rem 0.75rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--gray-color);
+    transition: var(--transition);
+}
+
+.form-floating .form-control:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 0.25rem rgba(108, 92, 231, 0.25);
+}
+
+.form-floating label {
+    color: var(--secondary-color);
+    padding: 1rem 0.75rem;
+}
+
+/* Button Styles */
+.btn-add-teacher {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-add-teacher:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
+}
+
+.btn-add-teacher::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
+}
+
+.btn-add-teacher:hover::before {
+    left: 100%;
+}
+
+/* Table Styles */
+.table-teachers {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table-teachers thead th {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    padding: 1rem;
+    border: none;
+    position: sticky;
+    top: 0;
+}
+
+.table-teachers tbody tr {
+    transition: var(--transition);
+}
+
+.table-teachers tbody tr:hover {
+    background-color: rgba(108, 92, 231, 0.05);
+    transform: translateX(5px);
+}
+
+.table-teachers td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--gray-color);
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-action {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: var(--transition);
+    border: none;
+}
+
+.btn-edit {
+    background-color: rgba(253, 203, 110, 0.2);
+    color: #e17055;
+}
+
+.btn-edit:hover {
+    background-color: rgba(253, 203, 110, 0.3);
+    transform: scale(1.1);
+}
+
+.btn-delete {
+    background-color: rgba(255, 118, 117, 0.2);
+    color: #d63031;
+}
+
+.btn-delete:hover {
+    background-color: rgba(255, 118, 117, 0.3);
+    transform: scale(1.1);
+}
+
+/* Modal Styles */
+.modal-content {
+    border-radius: var(--border-radius);
+    border: none;
+    box-shadow: var(--box-shadow);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .teacher-management-header h1 {
+        font-size: 2rem;
+    }
+
+    .table-teachers thead {
+        display: none;
+    }
+
+    .table-teachers tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        border-radius: var(--border-radius);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-teachers td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--gray-color);
+    }
+
+    .table-teachers td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-right: 1rem;
+    }
+
+    .action-buttons {
+        justify-content: flex-end;
+    }
+}
