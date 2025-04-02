@@ -4,6 +4,7 @@ import com.attendance.model.Attendance;
 import com.attendance.model.Student;
 import com.attendance.util.DBConnection;
 import org.mindrot.jbcrypt.BCrypt;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -22,6 +23,13 @@ public class StudentServlet extends HttpServlet {
 
     // Handles GET requests for student data and attendance records
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String action = request.getParameter("action");
+
+        if ("delete".equals(action)) {
+            handleDelete(request, response);
+            return;
+        }
+
         HttpSession session = request.getSession();
         Integer studentId = (Integer) session.getAttribute("studentId");
 
@@ -37,7 +45,7 @@ public class StudentServlet extends HttpServlet {
             System.out.println("[DEBUG] Database connection established.");
 
             // Fetch student details from the database
-            String studentQuery = "SELECT id, name, email, phone, parent_phone FROM users WHERE id = ? AND role = 'student'";
+            String studentQuery = "SELECT id, username, email, phone, parent_phone FROM users WHERE id = ? AND role = 'student'";
             PreparedStatement studentStmt = conn.prepareStatement(studentQuery);
             studentStmt.setInt(1, studentId);
             ResultSet studentRs = studentStmt.executeQuery();
@@ -45,7 +53,7 @@ public class StudentServlet extends HttpServlet {
             if (studentRs.next()) {
                 Student student = new Student(
                         studentRs.getInt("id"),
-                        studentRs.getString("name"),
+                        studentRs.getString("username"),
                         studentRs.getString("email"),
                         studentRs.getString("phone"),
                         studentRs.getString("parent_phone")
@@ -91,11 +99,20 @@ public class StudentServlet extends HttpServlet {
             response.getWriter().write("Error retrieving student data.");
         }
     }
-    // Handles POST requests to add new students
+
+    // Handles POST requests to add new students or delete students
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String action = request.getParameter("action");
+
+        if ("delete".equals(action)) {
+            handleDelete(request, response);
+            return;
+        }
+
+        // Existing add student functionality
         String name = request.getParameter("name");
         String email = request.getParameter("email");
-        String password = request.getParameter("password"); // Get the password
+        String password = request.getParameter("password");
 
         System.out.println("[DEBUG] Adding new student: " + name + " (" + email + ")");
 
@@ -109,7 +126,7 @@ public class StudentServlet extends HttpServlet {
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ps.setString(1, name);
                 ps.setString(2, email);
-                ps.setString(3, hashedPassword); // Save the hashed password
+                ps.setString(3, hashedPassword);
 
                 int result = ps.executeUpdate();
 
@@ -126,4 +143,39 @@ public class StudentServlet extends HttpServlet {
             System.out.println("[ERROR] SQL Exception: " + e.getMessage());
             response.getWriter().write("Error adding student.");
         }
-    }}
+    }
+
+    private void handleDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String idParam = request.getParameter("id");
+        if (idParam == null || idParam.isEmpty()) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Student ID is required");
+            return;
+        }
+
+        try {
+            int studentId = Integer.parseInt(idParam);
+            try (Connection conn = DBConnection.getConnection()) {
+                String sql = "DELETE FROM users WHERE id = ? AND role = 'student'";
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setInt(1, studentId);
+
+                int rowsAffected = ps.executeUpdate();
+                if (rowsAffected > 0) {
+                    if ("POST".equalsIgnoreCase(request.getMethod())) {
+                        response.sendRedirect(request.getContextPath() + "/pages/manage-student.jsp");
+                    } else {
+                        response.setStatus(HttpServletResponse.SC_OK);
+                        response.getWriter().write("Student deleted successfully");
+                    }
+                } else {
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "Student not found");
+                }
+            }
+        } catch (NumberFormatException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid student ID format");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
+        }
+    }
+}
