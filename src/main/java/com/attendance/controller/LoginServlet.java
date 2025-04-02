@@ -37,40 +37,73 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT id, username, password FROM users WHERE email = ? AND role = ?")) {
+        try (Connection conn = DBConnection.getConnection()) {
+            boolean loginSuccess = false;
+            String username = null;
+            int userId = -1;
 
-            stmt.setString(1, email);
-            stmt.setString(2, role);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                String storedHashedPassword = rs.getString("password");
-                boolean passwordMatch = BCrypt.checkpw(password, storedHashedPassword); // Secure password check
-
-                if (passwordMatch) {
-                    // Create session
-                    HttpSession session = request.getSession();
-                    session.setAttribute("userId", rs.getInt("id"));
-                    session.setAttribute("username", rs.getString("username"));
-                    session.setAttribute("email", email);
-                    session.setAttribute("role", role); // Store role
-
-                    // Debugging Logs (Remove in production)
-                    System.out.println("User logged in: " + email + ", Role: " + role);
-
-                    // Redirect user to the appropriate dashboard
-                    String redirectUrl = request.getContextPath() + "/pages/dashboard-" + role.toLowerCase() + ".jsp";
-                    jsonResponse.put("status", "success");
-                    jsonResponse.put("redirect", redirectUrl);
-                } else {
-                    jsonResponse.put("status", "error");
-                    jsonResponse.put("message", "Invalid email or password.");
+            // Query to fetch user data based on role
+            String query = "SELECT id, username, password FROM users WHERE email = ? AND role = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setString(1, email);
+                stmt.setString(2, role);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        // User found in "users" table
+                        String storedHashedPassword = rs.getString("password");
+                        if (BCrypt.checkpw(password, storedHashedPassword)) {
+                            loginSuccess = true;
+                            userId = rs.getInt("id");
+                            username = rs.getString("username");
+                        }
+                    }
                 }
+            }
+
+            // If the role is "Teacher" and user is not found in "users" table, check "teacher" table
+            if (!loginSuccess && "Teacher".equalsIgnoreCase(role)) {
+                query = "SELECT id, name, password FROM teacher WHERE email = ?";
+                try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                    stmt.setString(1, email);
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) {
+                            // User found in "teacher" table
+                            String storedHashedPassword = rs.getString("password");
+                            if (BCrypt.checkpw(password, storedHashedPassword)) {
+                                loginSuccess = true;
+                                userId = rs.getInt("id");
+                                username = rs.getString("name");
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (loginSuccess) {
+                // Successful login
+                HttpSession session = request.getSession(true);
+                session.setAttribute("userId", userId);
+                session.setAttribute("username", username);
+                session.setAttribute("email", email);
+                session.setAttribute("role", role);  // Store role
+
+                // Additional session attribute for teachers
+                if ("Teacher".equalsIgnoreCase(role)) {
+                    session.setAttribute("loggedInTeacherId", userId);  // Store teacher ID for attendance verification
+                }
+
+                // Logging (for debugging)
+                System.out.println("User logged in: " + email + ", Role: " + role + ", UserID: " + userId);
+
+                // Redirect user to the appropriate dashboard
+                String redirectUrl = request.getContextPath() + "/pages/dashboard-" + role.toLowerCase() + ".jsp";
+                jsonResponse.put("status", "success");
+                jsonResponse.put("redirect", redirectUrl);
             } else {
+                // Login failed
                 jsonResponse.put("status", "error");
-                jsonResponse.put("message", "User not found or role mismatch.");
+                jsonResponse.put("message", "Invalid email or password.");
+                System.out.println("Login failed for: " + email + ", Role: " + role);
             }
         } catch (SQLException e) {
             e.printStackTrace();

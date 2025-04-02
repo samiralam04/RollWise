@@ -10,6 +10,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 @WebServlet("/attendance")
 public class AttendanceServlet extends HttpServlet {
@@ -53,6 +54,23 @@ public class AttendanceServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             jsonResponse.put("success", false);
             jsonResponse.put("message", "Invalid student_id or teacher_id format. Must be a number.");
+            out.print(jsonResponse.toString());
+            return;
+        }
+
+        // Get the logged-in teacher ID from the session
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("loggedInTeacherId") == null) {
+            jsonResponse.put("success", false);
+            jsonResponse.put("message", "Teacher not logged in. Please log in first.");
+            out.print(jsonResponse.toString());
+            return;
+        }
+
+        int loggedInTeacherId = (int) session.getAttribute("loggedInTeacherId");
+        if (loggedInTeacherId != teacherId) {
+            jsonResponse.put("success", false);
+            jsonResponse.put("message", "Unauthorized action. Teacher ID mismatch.");
             out.print(jsonResponse.toString());
             return;
         }
