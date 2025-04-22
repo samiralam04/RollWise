@@ -38,10 +38,10 @@ public class AttendanceNotifier {
 
                     String parentEmail = rs.getString("parent_email");
 
-                    System.out.println("\n📌 Found student with low attendance:");
-                    System.out.println("   📌 Student ID: " + studentId);
-                    System.out.println("   📌 Parent Email: " + parentEmail);
-                    System.out.println("   📌 Attendance Percentage: " + percentage);
+                    System.out.println("\n Found student with low attendance:");
+                    System.out.println("   Student ID: " + studentId);
+                    System.out.println("    Parent Email: " + parentEmail);
+                    System.out.println("    Attendance Percentage: " + percentage);
 
                     emailList.add(parentEmail);
                     messages.add("Dear Parent,\n\n" +
@@ -54,10 +54,10 @@ public class AttendanceNotifier {
 
                 if (messageSent) {
                     sendBulkEmails(emailList, messages);
-//                    response.getWriter().write("✅ Email notifications sent successfully.");
+//                    response.getWriter().write(" Email notifications sent successfully.");
                 }
 //                else {
-//                    response.getWriter().write("⚠️ No students found with attendance below 75%.");
+//                    response.getWriter().write("⚠ No students found with attendance below 75%.");
 //                }
             }
         } catch (Exception e) {

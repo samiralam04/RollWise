@@ -24,8 +24,8 @@ public class EmergencyService {
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Date utilDate = dateFormat.parse(dateStr);  // Parse as java.util.Date
-            Timestamp sqlTimestamp = new Timestamp(utilDate.getTime());  // ✅ Convert to java.sql.Timestamp
-            emergency.setDate(sqlTimestamp);  // ✅ Set the correct type
+            Timestamp sqlTimestamp = new Timestamp(utilDate.getTime());  //  Convert to java.sql.Timestamp
+            emergency.setDate(sqlTimestamp);  //  Set the correct type
         } catch (ParseException e) {
             e.printStackTrace();
             return false;

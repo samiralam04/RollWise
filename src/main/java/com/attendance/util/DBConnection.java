@@ -16,12 +16,12 @@ public class DBConnection {
         try {
             Class.forName(DRIVER);
             connection = DriverManager.getConnection(URL, USER, PASSWORD);
-            System.out.println("✅ Database connected successfully!");
+            System.out.println("Database connected successfully!");
         } catch (ClassNotFoundException e) {
-            System.err.println("❌ PostgreSQL JDBC Driver not found!");
+            System.err.println("PostgreSQL JDBC Driver not found!");
             e.printStackTrace();
         } catch (SQLException e) {
-            System.err.println("❌ Database connection failed!");
+            System.err.println("Database connection failed!");
             e.printStackTrace();
         }
         return connection;
@@ -32,9 +32,9 @@ public class DBConnection {
         if (connection != null) {
             try {
                 connection.close();
-                System.out.println("✅ Database connection closed successfully!");
+                System.out.println("Database connection closed successfully!");
             } catch (SQLException e) {
-                System.err.println("❌ Error closing database connection!");
+                System.err.println("Error closing database connection!");
                 e.printStackTrace();
             }
         }

@@ -19,7 +19,7 @@ public class ExcelParser {
         Map<String, Integer> attendanceMap = new LinkedHashMap<>();
         DataFormatter dataFormatter = new DataFormatter(); // To handle different cell types
 
-        // ✅ Validate file type before processing
+        //  Validate file type before processing
         String fileName = filePart.getSubmittedFileName();
         if (!fileName.endsWith(".xlsx")) {
             throw new IllegalArgumentException("Invalid file format. Please upload an Excel (.xlsx) file.");
@@ -28,25 +28,25 @@ public class ExcelParser {
         try (InputStream fileInputStream = filePart.getInputStream();
              Workbook workbook = new XSSFWorkbook(fileInputStream)) {
 
-            Sheet sheet = workbook.getSheetAt(0); // ✅ First sheet contains attendance data
+            Sheet sheet = workbook.getSheetAt(0); //  First sheet contains attendance data
             boolean isFirstRow = true;
 
             for (Row row : sheet) {
                 if (isFirstRow) {
                     isFirstRow = false;
-                    continue; // ✅ Skip header row
+                    continue; //  Skip header row
                 }
 
                 if (row == null || row.getCell(0) == null) {
                     System.err.println("Skipping empty row...");
-                    continue; // ✅ Skip empty rows
+                    continue; //  Skip empty rows
                 }
 
-                // ✅ Read Student ID properly
+                //  Read Student ID properly
                 Cell studentIdCell = row.getCell(0);
                 String studentId = (studentIdCell != null) ? dataFormatter.formatCellValue(studentIdCell).trim() : null;
 
-                // ✅ Read Attendance Status (Assume "Present" or "Absent")
+                //  Read Attendance Status (Assume "Present" or "Absent")
                 Cell statusCell = row.getCell(3);
                 String status = (statusCell != null) ? dataFormatter.formatCellValue(statusCell).trim() : "Absent";
 

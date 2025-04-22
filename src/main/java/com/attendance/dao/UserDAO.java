@@ -11,7 +11,7 @@ import java.util.List;
 
 public class UserDAO {
 
-    // ✅ Register or Add a New User
+    //  Register or Add a New User
     public boolean addUser(User user) {
         String query = "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
@@ -31,7 +31,7 @@ public class UserDAO {
         }
     }
 
-    // ✅ Get User by ID
+    //  Get User by ID
     public User getUserById(int userId) {
         String query = "SELECT * FROM users WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -55,7 +55,7 @@ public class UserDAO {
         return null;
     }
 
-    // ✅ Get All Users
+    //  Get All Users
     public List<User> getAllUsers() {
         List<User> userList = new ArrayList<>();
         String query = "SELECT * FROM users";
@@ -78,7 +78,7 @@ public class UserDAO {
         return userList;
     }
 
-    // ✅ Validate User Login
+    //  Validate User Login
     public User validateUser(String email, String password) {
         String query = "SELECT * FROM users WHERE email = ? AND password = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -103,7 +103,7 @@ public class UserDAO {
         return null;
     }
 
-    // ✅ Update User
+    //  Update User
     public boolean updateUser(User user) {
         String query = "UPDATE users SET username = ?, email = ?, password = ?, role = ? WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -124,7 +124,7 @@ public class UserDAO {
         }
     }
 
-    // ✅ Delete User
+    //  Delete User
     public boolean deleteUser(String userId) {
         String query = "DELETE FROM users WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -140,7 +140,7 @@ public class UserDAO {
         }
     }
 
-    // ✅ Get Users by Role
+    //  Get Users by Role
     public List<User> getUsersByRole(String role) {
         List<User> userList = new ArrayList<>();
         String query = "SELECT * FROM users WHERE role = ?";

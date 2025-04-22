@@ -9,7 +9,7 @@ import java.sql.SQLException;
 
 public class UserService {
 
-    // ✅ Register a User
+    //  Register a User
     public boolean registerUser(User user) {
         String userQuery = "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?) RETURNING id";
         String attendanceQuery = "INSERT INTO attendance (student_id, date, status) VALUES (?, CURRENT_DATE, 'Absent')";
@@ -44,7 +44,7 @@ public class UserService {
         return false;
     }
 
-    // ✅ Validate User Login
+    //  Validate User Login
     public User validateUser(String email, String password) {
         String query = "SELECT * FROM users WHERE email = ? AND password = ?";
         try (Connection conn = DBConnection.getConnection();

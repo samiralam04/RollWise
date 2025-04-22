@@ -11,11 +11,11 @@ public class Attendance {
     private LocalDateTime recordedAt;
     private int teacherId;
 
-    // ✅ Default Constructor
+    //  Default Constructor
     public Attendance() {
     }
 
-    // ✅ Parameterized Constructor
+    //  Parameterized Constructor
     public Attendance(int id, int studentId, LocalDate date, String status, LocalDateTime recordedAt, int teacherId) {
         this.id = id;
         this.studentId = studentId;
@@ -26,7 +26,7 @@ public class Attendance {
     }
 
 
-    // ✅ Getters and Setters
+    //  Getters and Setters
     public int getId() {
         return id;
     }
@@ -75,7 +75,7 @@ public class Attendance {
         this.teacherId = teacherId;
     }
 
-    // ✅ Override toString() for debugging
+    //  Override toString() for debugging
     @Override
     public String toString() {
         return "Attendance{" +

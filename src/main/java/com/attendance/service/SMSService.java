@@ -24,7 +24,7 @@ public class SMSService {
         for (Student student : students) {
             String message = "Dear Parent, your child " + student.getName() +
                     " has attendance below 75%. Please take necessary action.";
-            sendSMS(student.getParentPhone(), message);  // ✅ FIXED METHOD
+            sendSMS(student.getParentPhone(), message);  //  FIXED METHOD
         }
     }
 
@@ -33,7 +33,7 @@ public class SMSService {
         List<Student> students = studentDAO.getStudentsWithAttendanceNearThreshold(75);
         for (Student student : students) {
             String message = "Warning: Your attendance is close to dropping below 75%. Maintain regular attendance.";
-            sendSMS(student.getPhone(), message);  // ✅ FIXED METHOD
+            sendSMS(student.getPhone(), message);  //  FIXED METHOD
         }
     }
 
@@ -41,8 +41,8 @@ public class SMSService {
     public void sendEmergencyAlert(String message) {
         List<Student> students = studentDAO.getAllStudents();
         for (Student student : students) {
-            sendSMS(student.getPhone(), message);          // ✅ FIXED METHOD
-            sendSMS(student.getParentPhone(), message);   // ✅ FIXED METHOD
+            sendSMS(student.getPhone(), message);          //  FIXED METHOD
+            sendSMS(student.getParentPhone(), message);   //  FIXED METHOD
         }
     }
 

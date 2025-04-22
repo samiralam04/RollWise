@@ -17,9 +17,9 @@ public class DBConnectionListener implements ServletContextListener {
         Connection conn = DBConnection.getConnection();
         if (conn != null) {
             event.getServletContext().setAttribute("DBConnection", conn);
-            LOGGER.info("✅ Database connection initialized and stored in ServletContext!");
+            LOGGER.info("Database connection initialized and stored in ServletContext!");
         } else {
-            LOGGER.severe("❌ Failed to establish database connection!");
+            LOGGER.severe("Failed to establish database connection!");
         }
     }
 
@@ -29,7 +29,7 @@ public class DBConnectionListener implements ServletContextListener {
         Connection conn = (Connection) context.getAttribute("DBConnection");
         if (conn != null) {
             DBConnection.closeConnection(conn);
-            LOGGER.info("✅ Database connection closed successfully!");
+            LOGGER.info("Database connection closed successfully!");
         }
     }
 }

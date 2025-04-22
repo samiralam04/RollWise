@@ -8,7 +8,7 @@ public class Emergency {
     private String description;
     private Timestamp date;  // Use Timestamp instead of Date
 
-    // ✅ Constructor with all fields
+    //  Constructor with all fields
     public Emergency(int id, String title, String description, Timestamp date) {
         this.id = id;
         this.title = title;
@@ -16,10 +16,10 @@ public class Emergency {
         this.date = date;
     }
 
-    // ✅ Default Constructor (Required for JDBC)
+    // Default Constructor (Required for JDBC)
     public Emergency() {}
 
-    // ✅ Getter Methods
+    //  Getter Methods
     public int getId() {
         return id;
     }
@@ -36,7 +36,7 @@ public class Emergency {
         return date;
     }
 
-    // ✅ Setter Methods
+    //  Setter Methods
     public void setId(int id) {
         this.id = id;
     }

@@ -4,20 +4,20 @@ import java.util.Date;
 
 public class Holiday {
     private int id;
-    private String reason;   // ✅ Ensure this exists
-    private Date date;       // ✅ Ensure this exists
+    private String reason;
+    private Date date;
 
-    // ✅ Constructor with all fields
+    //  Constructor with all fields
     public Holiday(int id, String reason, Date date) {
         this.id = id;
         this.reason = reason;
         this.date = date;
     }
 
-    // ✅ Default Constructor (Required for JDBC)
+    //  Default Constructor (Required for JDBC)
     public Holiday() {}
 
-    // ✅ Getter Methods
+    //  Getter Methods
     public int getId() {
         return id;
     }
@@ -30,7 +30,7 @@ public class Holiday {
         return date;
     }
 
-    // ✅ Setter Methods
+    //  Setter Methods
     public void setId(int id) {
         this.id = id;
     }

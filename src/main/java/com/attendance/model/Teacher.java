@@ -4,57 +4,57 @@ public class Teacher {
     private int id;
     private String name;
     private String email;
-    private String phone;  // ❌ Remove Optional here
+    private String phone;  //  Remove Optional here
     private String subject;
     private String username;
     private String password;
 
-    // ✅ Constructor with all fields
+    //  Constructor with all fields
     public Teacher(int id, String name, String email, String phone, String subject, String username, String password) {
         this.id = id;
         this.name = name;
         this.email = email;
-        this.phone = phone;  // ✅ Store raw value
+        this.phone = phone;  //  Store raw value
         this.subject = subject;
         this.username = username;
         this.password = password;
     }
 
-    // ✅ Constructor with (id, name, email, phone, subject, username)
+    //  Constructor with (id, name, email, phone, subject, username)
     public Teacher(int id, String name, String email, String phone, String subject, String username) {
         this(id, name, email, phone, subject, username, null);
     }
 
-    // ✅ Constructor with (id, name, email, subject)
+    //  Constructor with (id, name, email, subject)
     public Teacher(int id, String name, String email, String subject) {
         this(id, name, email, null, subject, null, null);
     }
 
-    // ✅ Constructor with (id, name, email)
+    //  Constructor with (id, name, email)
     public Teacher(int id, String name, String email) {
         this(id, name, email, null, null, null, null);
     }
 
-    // ✅ Default Constructor
+    //  Default Constructor
     public Teacher() {}
 
-    // ✅ Getter Methods
+    //  Getter Methods
     public int getId() { return id; }
     public String getName() { return name; }
     public String getEmail() { return email; }
 
-    // ✅ Handle Optional at method level
+    //  Handle Optional at method level
     public String getPhone() { return phone != null ? phone : "N/A"; }
     public String getSubject() { return subject != null ? subject : "N/A"; }
 
     public String getUsername() { return username; }
 
-    // ❌ Do not expose raw password in real applications
+    //  Do not expose raw password in real applications
     public String getPassword() {
         return "********"; // Masked for security
     }
 
-    // ✅ Setter Methods
+    //  Setter Methods
     public void setId(int id) { this.id = id; }
     public void setName(String name) { this.name = name; }
     public void setEmail(String email) { this.email = email; }
@@ -67,7 +67,7 @@ public class Teacher {
         this.password = password;
     }
 
-    // ✅ toString() for debugging
+    //  toString() for debugging
     @Override
     public String toString() {
         return "Teacher{" +

@@ -74,7 +74,7 @@ public class SMSNotificationServlet extends HttpServlet {
 
         } catch (SQLException e) {
             e.printStackTrace();
-            response.getWriter().write("❌ Error sending email notifications.");
+            response.getWriter().write(" Error sending email notifications.");
         }
     }
 }

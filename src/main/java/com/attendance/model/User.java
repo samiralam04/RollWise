@@ -7,10 +7,10 @@ public class User {
     private String password;
     private String role;
 
-    // ✅ Default Constructor (Required for frameworks like Hibernate)
+    //  Default Constructor (Required for frameworks like Hibernate)
     public User() {}
 
-    // ✅ Constructor with ID (Used when fetching data from DB)
+    //  Constructor with ID (Used when fetching data from DB)
     public User(int id, String name, String email, String password, String role) {
         this.id = id;
         this.name = name;
@@ -19,7 +19,7 @@ public class User {
         this.role = role;
     }
 
-    // ✅ Constructor without ID (Used when inserting a new user)
+    //  Constructor without ID (Used when inserting a new user)
     public User(String name, String email, String password, String role) {
         this.name = name;
         this.email = email;
@@ -27,7 +27,7 @@ public class User {
         this.role = role;
     }
 
-    // ✅ Getters & Setters
+    //  Getters & Setters
     public int getId() {
         return id;
     }
