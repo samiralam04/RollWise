@@ -6,69 +6,66 @@ An AI-powered web-based attendance management system featuring facial recognitio
 ## Key Features
 
 ### 🎯 AI-Powered Face Recognition
-- **Face Enrollment**: Register student faces through admin panel
-- **Live Self-Attendance**: Students mark attendance using webcam with blink detection for liveness verification
-- **Classroom Attendance**: Teachers upload classroom photos for automatic batch attendance marking
-- **Mock Mode Support**: System can run without AI libraries for testing (returns dummy data)
+- **Face Enrollment**: Register student faces through admin panel.
+- **Live Self-Attendance**: Students mark attendance using webcam with blink detection for liveness verification.
+- **Classroom Attendance**: Teachers upload classroom photos for automatic batch attendance marking with detection for unknown faces.
+- **Attendance Protection**: 'Present' status is protected for the calendar day and cannot be accidentally overwritten as 'Absent'.
+- **Mock Mode Support**: System can run without AI libraries for testing (returns dummy data).
 
 ### 👨‍💼 Admin Section
-![Admin Dashboard](Admin.png)
-
-- User management (add/remove teachers and students)
-- Face enrollment system for students
-- Declare holidays and send emergency alerts
-- View comprehensive attendance reports
-- Automated email notifications to parents
-- Audit logging for all system actions
+- User management (add/remove teachers and students).
+- Face enrollment system for students.
+- Declare holidays and send emergency alerts.
+- View comprehensive attendance reports.
+- Automated email notifications to parents.
+- Audit logging for all system actions.
 
 ### 👩‍🏫 Teacher Section
-![Teacher Dashboard](Teacher.png)
+- **Modernized Dashboard**: Clean, card-based UI with quick actions.
+- Mark attendance manually or via Excel upload.
+- Classroom photo attendance (AI-powered batch recognition) with feedback for unrecognized students.
+- Automatic attendance percentage calculation with visual progress bars.
+- Warning emails for students below 75% attendance.
+- View student attendance analytics.
 
-- Mark attendance manually or via Excel upload
-- Classroom photo attendance (AI-powered batch recognition)
-- Automatic attendance percentage calculation
-- Warning emails for students below 75% attendance
-- View student attendance analytics
-
-### 👨‍🎓 Student Section
-![Student Dashboard](Student.png)
-
-- Live self-attendance with webcam (face + blink verification)
-- View personal attendance records and statistics
-- Receive email notifications for low attendance
-- Access to holiday and alert announcements
+### 👨🎓 Student Section
+- Live self-attendance with webcam (face + blink verification).
+- View personal attendance records and statistics.
+- Receive email notifications for low attendance.
+- Access to holiday and alert announcements.
 
 ## Technology Stack
 
 ### Backend
-- **Java 8** - Core application logic
-- **Servlet/JSP** - Web application framework
-- **Hibernate 5.6** - ORM for database operations
-- **Maven** - Dependency management and build tool
-- **Apache Tomcat 9** - Application server
+- **Java 8** - Core application logic.
+- **Servlet/JSP** - Web application framework.
+- **PostgreSQL JDBC** - Direct database connectivity for performance.
+- **Maven** - Dependency management and build tool.
+- **Apache Tomcat 9** - Application server.
 
 ### Frontend
-- **HTML5/CSS3** - Structure and styling
-- **JavaScript** - Client-side interactivity
-- **Bootstrap** - Responsive UI framework
-- **AJAX** - Asynchronous requests
+- **HTML5/CSS3** - Structure and styling.
+- **JavaScript** - Client-side interactivity.
+- **Bootstrap 5** - Responsive UI framework.
+- **FontAwesome 6** - Vector icons.
+- **SweetAlert2** - Modern popup notifications.
+- **AJAX** - Asynchronous requests.
 
 ### AI/ML Services
-- **Python 3.13** - AI service runtime
-- **Flask** - Python web framework
-- **OpenCV** - Image processing
-- **face_recognition** - Face detection and encoding (based on dlib)
-- **NumPy** - Numerical computations
+- **Python 3.13** - AI service runtime.
+- **Flask** - Python web framework.
+- **OpenCV** - Image processing.
+- **face_recognition** - Face detection and encoding (based on dlib).
+- **NumPy** - Numerical computations.
 
 ### Database
-- **PostgreSQL** - Primary database
-- Schema includes: users, students, teachers, attendance records, face data, audit logs
+- **PostgreSQL** - Primary database (`attendance_system`).
+- Schema includes: users, students, teachers, attendance records, face data, audit logs.
 
 ### Security
-- **BCrypt** password hashing
-- Session-based authentication
-- Role-based access control (RBAC)
-- CSRF protection
+- **BCrypt** password hashing.
+- Session-based authentication.
+- Role-based access control (RBAC).
 
 ## Architecture
 
@@ -110,10 +107,13 @@ cd StudentAttendanceManagementSystem
 ### 2. Database Setup
 ```bash
 # Create PostgreSQL database
-createdb attendance_db
+createdb attendance_system
 
-# Update database credentials in:
-# src/main/resources/hibernate.cfg.xml
+# Configuration:
+# Create a .env file in the root directory with:
+DB_URL=jdbc:postgresql://localhost:5432/attendance_system
+DB_USER=your_username
+DB_PASSWORD=your_password
 ```
 
 ### 3. Python AI Service Setup
@@ -124,15 +124,14 @@ cd python_services
 python3 -m venv venv
 
 # Activate virtual environment
-source venv/bin/activate  # On macOS/Linux
+source venv/bin/activate  # macOS/Linux
 # OR
-venv\Scripts\activate     # On Windows
+venv\Scripts\activate     # Windows
 
 # Install dependencies
 pip install -r requirements.txt
 
 # For full AI functionality (optional):
-# Install cmake first
 brew install cmake  # macOS
 # OR
 sudo apt-get install cmake  # Ubuntu/Debian
@@ -146,8 +145,7 @@ pip install face_recognition
 # From python_services directory
 ./start_python_service.sh
 
-# Service will start on http://localhost:5000
-# Verify with: curl http://localhost:5000/health
+# Verify with: curl http://localhost:5000/status
 ```
 
 ### 5. Build and Deploy Java Application
@@ -155,8 +153,7 @@ pip install face_recognition
 # From project root directory
 mvn clean package cargo:run
 
-# Application will start on http://localhost:8080
-# Access at: http://localhost:8080/StudentAttendanceManagementSystem
+# Application will start on http://localhost:8080/StudentAttendanceManagementSystem
 ```
 
 ## Running the Application
@@ -173,13 +170,6 @@ mvn clean package cargo:run
    mvn cargo:run
    ```
 
-### Access Points
-- **Main Application**: http://localhost:8080/StudentAttendanceManagementSystem
-- **Python AI Service**: http://localhost:5000 (internal use only)
-
-### Default Login Credentials
-Create admin account through registration page, then use admin panel to add teachers and students.
-
 ## API Endpoints (Python Service)
 
 | Endpoint | Method | Purpose |
@@ -187,35 +177,8 @@ Create admin account through registration page, then use admin panel to add teac
 | `/enroll-face` | POST | Enroll student face, returns 128-d encoding |
 | `/verify-live-student` | POST | Verify identity + liveness (blink detection) |
 | `/recognize-class` | POST | Batch face recognition from classroom photo |
-| `/health` | GET | Health check endpoint |
-
-## Project Structure
-```
-StudentAttendanceManagementSystem/
-├── src/
-│   ├── main/
-│   │   ├── java/com/attendance/
-│   │   │   ├── controller/     # Servlets
-│   │   │   ├── dao/            # Database access
-│   │   │   ├── entity/         # JPA entities
-│   │   │   ├── service/        # Business logic
-│   │   │   └── util/           # Utilities
-│   │   ├── resources/
-│   │   │   └── hibernate.cfg.xml
-│   │   └── webapp/
-│   │       ├── pages/          # JSP pages
-│   │       ├── css/            # Stylesheets
-│   │       ├── js/             # JavaScript
-│   │       └── WEB-INF/
-│   └── test/                   # Unit tests
-├── python_services/
-│   ├── app.py                  # Flask application
-│   ├── requirements.txt        # Python dependencies
-│   ├── start_python_service.sh # Startup script
-│   └── venv/                   # Virtual environment
-├── pom.xml                     # Maven configuration
-└── README.md
-```
+| `/status` | GET | Check service and AI model status |
+| `/health` | GET | Basic health check |
 
 ## Troubleshooting
 
@@ -226,9 +189,7 @@ StudentAttendanceManagementSystem/
 - Restart service: `pkill -f app.py && ./start_python_service.sh`
 
 **Problem**: "AI libraries not available"
-- This is expected if cmake/face_recognition isn't installed
-- System runs in mock mode (returns dummy encodings)
-- For full AI: Install cmake, then `pip install face_recognition`
+- This is expected if cmake/face_recognition isn't installed. System runs in mock mode (returns dummy data).
 
 ### Java Application Issues
 **Problem**: "Port 8080 already in use"
@@ -236,49 +197,26 @@ StudentAttendanceManagementSystem/
 - Restart: `mvn cargo:run`
 
 **Problem**: "Database connection failed"
-- Verify PostgreSQL is running
-- Check credentials in `hibernate.cfg.xml`
-- Ensure database exists: `psql -l | grep attendance_db`
+- Verify PostgreSQL is running.
+- Check credentials in `.env` file.
 
 ## Features in Detail
 
-### Face Enrollment Process
-1. Admin selects student from dropdown
-2. Student uploads clear face photo
-3. Python service extracts 128-dimensional face encoding
-4. Encoding stored in database for future matching
+### Attendance Logic
+The system implements strict attendance rules:
+- **Daily Lock**: Once a student is marked "Present", they cannot be marked "Absent" for the rest of the day by automatic systems (prevents overwriting by classroom photos where they might be out of frame).
+- **Manual Overrides**: Teachers can still upgrade an "Absent" status to "Present" if needed.
+- **Reporting**: Automatic calculation of percentage with color-coded status indicators (Green > 75%, Yellow > 50%, Red < 50%).
 
-### Live Self-Attendance
-1. Student clicks "Mark Attendance"
-2. Webcam captures live photo
-3. System verifies face matches enrolled encoding
-4. Blink detection confirms liveness (prevents photo spoofing)
-5. Attendance marked automatically
-
-### Classroom Attendance
-1. Teacher uploads classroom photo
-2. Python service detects all faces
-3. Matches against enrolled student encodings
-4. Returns list of present students
-5. Attendance records created in batch
-
-## Contributing
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### Classroom AI Recognition
+The classroom attendance feature processes group photos. If any student is detected but not recognized (not matching any enrolled encoding), the system provides a warning message to the teacher: "One or more students were not recognized."
 
 ## License
 This project is licensed under the MIT License.
-© 2025 Samir Alam. All rights reserved.
+© 2026 Samir Alam. All rights reserved.
 
 ## Contact
 **Developer**: Samir Alam  
-**Year**: 2025
+**Year**: 2026
 
 Feel free to reach out for suggestions, collaborations, or support.
-
----
-**Note**: For full AI functionality, install `cmake` and `face_recognition`. Otherwise, the system runs in mock mode for testing purposes.
