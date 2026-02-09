@@ -2,6 +2,7 @@ package com.attendance.model;
 
 public class Student {
     private int id;
+    private int userId;
     private String name;
     private String email;
     private String phone;
@@ -9,9 +10,11 @@ public class Student {
     private String className;
     private String parentPhone;
 
-    //  Constructor with 7 parameters (used in StudentDAO)
-    public Student(int id, String name, String email, String phone, String rollNumber, String className, String parentPhone) {
+    // Constructor with 7 parameters (used in StudentDAO)
+    public Student(int id, int userId, String name, String email, String phone, String rollNumber, String className,
+            String parentPhone) {
         this.id = id;
+        this.userId = userId;
         this.name = name;
         this.email = email;
         this.phone = phone;
@@ -20,7 +23,7 @@ public class Student {
         this.parentPhone = parentPhone;
     }
 
-    //  Constructor with 5 parameters (if needed)
+    // Constructor with 5 parameters (if needed)
     public Student(int id, String name, String email, String phone, String rollNumber) {
         this.id = id;
         this.name = name;
@@ -29,12 +32,21 @@ public class Student {
         this.rollNumber = rollNumber;
     }
 
-    //  Default Constructor (Required for JDBC Operations)
-    public Student() {}
+    // Default Constructor (Required for JDBC Operations)
+    public Student() {
+    }
 
-    //  Getter Methods
+    // Getter Methods
     public int getId() {
         return id;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getName() {
@@ -61,7 +73,7 @@ public class Student {
         return parentPhone;
     }
 
-    //  Setter Methods
+    // Setter Methods
     public void setId(int id) {
         this.id = id;
     }

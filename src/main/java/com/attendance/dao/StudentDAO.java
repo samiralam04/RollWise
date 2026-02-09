@@ -12,7 +12,7 @@ public class StudentDAO {
 
     private static final Logger LOGGER = Logger.getLogger(StudentDAO.class.getName());
 
-    private static final String BASE_QUERY = "SELECT s.id, u.username as name, u.email, '' as phone, s.roll_number, c.class_name, '' as parent_phone "
+    private static final String BASE_QUERY = "SELECT s.id, u.id AS user_id, u.username as name, u.email, '' as phone, s.roll_number, c.class_name, '' as parent_phone "
             +
             "FROM students s " +
             "JOIN users u ON s.user_id = u.id " +
@@ -248,6 +248,7 @@ public class StudentDAO {
     private Student mapResultSetToStudent(ResultSet rs) throws SQLException {
         return new Student(
                 rs.getInt("id"),
+                rs.getInt("user_id"),
                 rs.getString("name"),
                 rs.getString("email"),
                 rs.getString("phone"),

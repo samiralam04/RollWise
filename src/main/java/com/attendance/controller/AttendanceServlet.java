@@ -15,21 +15,13 @@ import javax.servlet.http.HttpSession;
 @WebServlet("/attendance")
 public class AttendanceServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    // Removed hardcoded DB constants in favor of DBConnection utility
 
-    private static final String DB_URL = "jdbc:postgresql://localhost:5432/attendance_system";
-    private static final String DB_USER = "attendance_system";
-    private static final String DB_PASSWORD = "mark47";
-
-    static {
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
+    // Removed static block for Class.forName as DBConnection handles driver loading
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
         JSONObject jsonResponse = new JSONObject();
@@ -40,7 +32,8 @@ public class AttendanceServlet extends HttpServlet {
         String teacherIdStr = request.getParameter("teacher_id");
 
         if (studentIdStr == null || date == null || status == null || teacherIdStr == null ||
-                studentIdStr.trim().isEmpty() || date.trim().isEmpty() || status.trim().isEmpty() || teacherIdStr.trim().isEmpty()) {
+                studentIdStr.trim().isEmpty() || date.trim().isEmpty() || status.trim().isEmpty()
+                || teacherIdStr.trim().isEmpty()) {
             jsonResponse.put("success", false);
             jsonResponse.put("message", "Invalid input. Please provide student_id, date, status, and teacher_id.");
             out.print(jsonResponse.toString());
@@ -67,7 +60,7 @@ public class AttendanceServlet extends HttpServlet {
             return;
         }
 
-        int loggedInTeacherId = (int) session.getAttribute("loggedInTeacherId");
+        int loggedInTeacherId = (int) session.getAttribute("userId");
         if (loggedInTeacherId != teacherId) {
             jsonResponse.put("success", false);
             jsonResponse.put("message", "Unauthorized action. Teacher ID mismatch.");
@@ -75,7 +68,7 @@ public class AttendanceServlet extends HttpServlet {
             return;
         }
 
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+        try (Connection conn = com.attendance.util.DBConnection.getConnection()) {
             String checkQuery = "SELECT status FROM attendance WHERE student_id = ? AND date = ?";
             try (PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
                 checkStmt.setInt(1, studentId);

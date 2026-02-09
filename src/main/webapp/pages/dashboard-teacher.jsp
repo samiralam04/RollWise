@@ -74,7 +74,26 @@
                 <div class="card p-3">
                     <h4>Mark Attendance Manually</h4>
                     <form id="manualAttendanceForm">
-                        <!-- ... form content ... -->
+                        <div class="mb-2">
+                            <label class="form-label">Student ID (User ID)</label>
+                            <input type="number" name="student_id" class="form-control" required placeholder="Enter Student's User ID">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Teacher ID</label>
+                            <input type="number" name="teacher_id" class="form-control" value="<%= session.getAttribute("userId") %>" readonly>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Date</label>
+                            <input type="date" name="date" class="form-control" value="<%= new java.sql.Date(System.currentTimeMillis()) %>" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select" required>
+                                <option value="Present">Present</option>
+                                <option value="Absent">Absent</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Save Attendance</button>
                     </form>
                 </div>
             </div>
@@ -108,10 +127,11 @@
                     <%
                         if (conn != null) {
                             try (PreparedStatement ps = conn.prepareStatement(
-                                    "SELECT a.student_id, a.teacher_id, a.date, p.parent_email, " +
+                                    "SELECT a.student_id, u.username AS student_name, a.teacher_id, a.date, p.parent_email, " +
                                     "COUNT(a.student_id) OVER (PARTITION BY a.student_id) AS total_classes, " +
                                     "SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) OVER (PARTITION BY a.student_id) AS attended_classes " +
                                     "FROM attendance a " +
+                                    "JOIN users u ON a.student_id = u.id " +
                                     "LEFT JOIN parents p ON a.parent_email_id = p.id " +
                                     "ORDER BY a.date DESC"
                             );
@@ -126,7 +146,7 @@
                                     double percentage = (totalClasses > 0) ? (attendedClasses * 100.0 / totalClasses) : 0;
                     %>
                             <tr>
-                                <td><%= studentId %></td>
+                                <td><%= studentId %> (<%= rs.getString("student_name") %>)</td>
                                 <td><%= teacherId %></td>
                                 <td><%= date %></td>
                                 <td><%= (parentEmail != null && !parentEmail.isEmpty()) ? parentEmail : "N/A" %></td>

@@ -6,7 +6,7 @@
     // Get session values
     String userType = (String) session.getAttribute("role");
     String userEmail = (String) session.getAttribute("email");
-    String userName = (String) session.getAttribute("name");
+    String userName = (String) session.getAttribute("username");
 
     // Redirect to login if session is invalid or user is not a student
     if (userEmail == null || !"student".equals(userType)) {

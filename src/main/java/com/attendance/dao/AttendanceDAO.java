@@ -9,14 +9,18 @@ import java.util.List;
 
 public class AttendanceDAO {
 
-    // Save Attendance Record
+    // Save Attendance Record (With UPSERT logic)
     public boolean saveAttendance(Attendance attendance) {
         String query = "INSERT INTO attendance (student_id, date, status, recorded_at, teacher_id) " +
-                "VALUES (?, ?, ?, ?, ?)";
+                "VALUES (?, ?, ?, ?, ?) " +
+                "ON CONFLICT (student_id, date) DO UPDATE SET " +
+                "status = EXCLUDED.status, " +
+                "recorded_at = EXCLUDED.recorded_at, " +
+                "teacher_id = EXCLUDED.teacher_id";
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            System.out.println("Saving Attendance: " + attendance); // Log data before inserting
+            System.out.println("Saving/Updating Attendance: " + attendance);
 
             stmt.setInt(1, attendance.getStudentId());
             stmt.setDate(2, Date.valueOf(attendance.getDate()));
@@ -25,7 +29,7 @@ public class AttendanceDAO {
             stmt.setInt(5, attendance.getTeacherId());
 
             int rowsAffected = stmt.executeUpdate();
-            System.out.println("Rows inserted: " + rowsAffected);
+            System.out.println("Rows affected: " + rowsAffected);
 
             return rowsAffected > 0;
         } catch (SQLException e) {

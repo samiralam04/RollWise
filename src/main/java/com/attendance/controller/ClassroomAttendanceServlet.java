@@ -107,11 +107,11 @@ public class ClassroomAttendanceServlet extends HttpServlet {
 
                     // Mark in DB
                     int teacherId = 1; // Default teacher ID
-                    if (request.getSession().getAttribute("user") != null) {
-                        teacherId = ((com.attendance.model.User) request.getSession().getAttribute("user")).getId();
+                    if (request.getSession().getAttribute("userId") != null) {
+                        teacherId = (Integer) request.getSession().getAttribute("userId");
                     }
 
-                    attendanceDAO.markAttendance(s.getId(), status, teacherId);
+                    attendanceDAO.markAttendance(s.getUserId(), status, teacherId);
 
                     if (isPresent) {
                         markedCount++;
