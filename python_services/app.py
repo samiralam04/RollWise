@@ -266,6 +266,14 @@ def verify_live_student():
 def health():
     return jsonify({"status": "healthy"})
 
+@app.route('/status', methods=['GET'])
+def status():
+    return jsonify({
+        "status": "online",
+        "ai_available": AI_AVAILABLE,
+        "model_version": ENCODING_MODEL_VERSION
+    })
+
 if __name__ == '__main__':
     # Run on localhost:5000
     app.run(host='0.0.0.0', port=5000, debug=False)

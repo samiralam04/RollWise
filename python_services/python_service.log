@@ -18,3 +18,4 @@ OSError: [Errno 9] Bad file descriptor
 Current thread 0x00000001fddd2c40 (most recent call first):
   <no Python frame>
 00 -
+./start_python_service.sh: line 18: 43497 Terminated: 15          python app.py
