@@ -40,3 +40,4 @@ build/
 ### Secrets & Logs ###
 .env
 *.log
+cookies.txt
