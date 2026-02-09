@@ -134,20 +134,30 @@ def recognize_class():
         if not known_faces_list:
             return jsonify({"status": "error", "message": "No known encodings provided"}), 400
 
-        # Compare
+        # Compare each detected face against known faces
         for encoding in face_encodings:
             matches = face_recognition.compare_faces(known_faces_list, encoding, tolerance=0.6)
             face_distances = face_recognition.face_distance(known_faces_list, encoding)
             
+            # Find best match
             best_match_index = np.argmin(face_distances)
-            if matches[best_match_index]:
+            best_distance = face_distances[best_match_index]
+            
+            # Only accept if:
+            # 1. Passes tolerance check (matches[best_match_index] is True)
+            # 2. Distance is genuinely good (< 0.45 for high confidence)
+            if matches[best_match_index] and best_distance < 0.45:
                 student_id = known_ids[best_match_index]
                 if student_id not in present_students:
                     present_students.append(student_id)
+                    logging.info(f"Matched student {student_id} with distance {best_distance:.3f}")
+            else:
+                logging.info(f"Face detected but no good match. Best distance: {best_distance:.3f}")
 
         return jsonify({
             "status": "success",
-            "present_students": present_students
+            "present_students": present_students,
+            "total_faces_detected": len(face_encodings)
         })
 
     except Exception as e:
@@ -228,23 +238,32 @@ def verify_live_student():
                 if not live_encodings:
                      return jsonify({"verified": False, "liveness": "fail", "message": "Could not extract face features"})
 
-                # Compare
+                # Compare with strict distance check
                 matches = face_recognition.compare_faces([ref_list], live_encodings[0], tolerance=0.6)
+                face_distance = face_recognition.face_distance([ref_list], live_encodings[0])[0]
                 
-                if matches[0]:
+                logging.info(f"Live attendance face match - Distance: {face_distance:.3f}")
+                
+                # Only accept if:
+                # 1. Passes tolerance check (matches[0] is True)
+                # 2. Distance is genuinely good (< 0.45 for high confidence)
+                if matches[0] and face_distance < 0.45:
                     return jsonify({
                         "verified": True,
                         "liveness": "face_matched",
                         "match": True,
                         "blink_detected": blink_detected,
                         "ear": ear_value,
+                        "distance": face_distance,
                         "message": "Identity verified!" if blink_detected else "Face matched. Please blink to confirm liveness."
                     })
                 else:
+                    logging.info(f"Face match failed - Distance {face_distance:.3f} exceeds threshold 0.45")
                     return jsonify({
                         "verified": False,
                         "liveness": "mismatch",
                         "match": False,
+                        "distance": face_distance,
                         "message": "Face does not match your registered profile"
                     })
             except Exception as e:
