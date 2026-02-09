@@ -47,6 +47,19 @@
                     <label for="studentId" class="form-label">Student ID</label>
                     <input type="number" class="form-control" id="studentId" name="studentId" required placeholder="Enter Student ID">
                 </div>
+
+                <div class="mb-3">
+                    <label for="className" class="form-label">Class Name (Optional Filter)</label>
+                    <select class="form-select" id="className" name="className">
+                        <option value="" selected>All Classes</option>
+                        <option value="CSE-A">CSE-A</option>
+                        <option value="CSE-B">CSE-B</option>
+                        <option value="ECE-A">ECE-A</option>
+                        <option value="ECE-B">ECE-B</option>
+                        <option value="MECH-A">MECH-A</option>
+                        <option value="MECH-B">MECH-B</option>
+                    </select>
+                </div>
                 
                 <div class="mb-3">
                     <label for="image" class="form-label">Upload Face Image</label>

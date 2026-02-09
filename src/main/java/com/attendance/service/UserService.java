@@ -11,9 +11,16 @@ public class UserService {
 
     // Register a User
     public boolean registerUser(User user) {
+        return registerUser(user, "CSE-A"); // Default class if not specified
+    }
+
+    public boolean registerUser(User user, String className) {
         String userQuery = "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?) RETURNING id";
         String studentQuery = "INSERT INTO students (id, user_id, roll_number, class_id, student_email) VALUES (?, ?, ?, ?, ?)";
         String attendanceQuery = "INSERT INTO attendance (student_id, date, status) VALUES (?, CURRENT_DATE, 'Absent')";
+
+        com.attendance.dao.StudentDAO studentDAO = new com.attendance.dao.StudentDAO();
+        int classId = studentDAO.getOrCreateClassId(className);
 
         try (Connection conn = DBConnection.getConnection()) {
             conn.setAutoCommit(false); // Use transaction
@@ -36,7 +43,7 @@ public class UserService {
                         studentStmt.setInt(1, userId); // Force student ID to match user ID for easy admin management
                         studentStmt.setInt(2, userId);
                         studentStmt.setString(3, "ROLL-" + userId); // Default roll number
-                        studentStmt.setInt(4, 1); // Default to Class ID 1 (Class 10A)
+                        studentStmt.setInt(4, classId); // Use resolved class ID
                         studentStmt.setString(5, user.getEmail());
                         studentStmt.executeUpdate();
 

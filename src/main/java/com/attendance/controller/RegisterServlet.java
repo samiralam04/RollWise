@@ -58,7 +58,8 @@ public class RegisterServlet extends HttpServlet {
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
 
         User user = new User(name, email, hashedPassword, role);
-        boolean isRegistered = userService.registerUser(user);
+        String className = request.getParameter("className");
+        boolean isRegistered = userService.registerUser(user, className);
 
         if (isRegistered) {
             response.getWriter().write("success");

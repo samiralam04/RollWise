@@ -20,8 +20,8 @@ public class StudentDAO {
 
     // Add a new student
     public boolean addStudent(Student student) {
-        // This is a complex operation as it involves both users and students tables.
-        // Usually handled in UserService, but keeping this for compatibility if needed.
+        int classId = getOrCreateClassId(student.getClassName());
+
         String userQuery = "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, 'student') RETURNING id";
         String studentQuery = "INSERT INTO students (user_id, roll_number, class_id, student_email) VALUES (?, ?, ?, ?)";
 
@@ -43,7 +43,7 @@ public class StudentDAO {
                     try (PreparedStatement sStmt = conn.prepareStatement(studentQuery)) {
                         sStmt.setInt(1, userId);
                         sStmt.setString(2, student.getRollNumber());
-                        sStmt.setInt(3, 1); // Default class
+                        sStmt.setInt(3, classId); // Dynamic class ID
                         sStmt.setString(4, student.getEmail());
                         sStmt.executeUpdate();
                     }
@@ -58,6 +58,42 @@ public class StudentDAO {
             LOGGER.severe("DB Error: " + e.getMessage());
         }
         return false;
+    }
+
+    // Helper to get Class ID by Name, or create if not exists
+    public int getOrCreateClassId(String className) {
+        if (className == null || className.trim().isEmpty()) {
+            return 1; // Default if no class provided
+        }
+
+        String selectQuery = "SELECT id FROM classes WHERE class_name = ?";
+        String insertQuery = "INSERT INTO classes (class_name) VALUES (?) RETURNING id";
+
+        try (Connection conn = DBConnection.getConnection()) {
+            // Try to find existing
+            try (PreparedStatement stmt = conn.prepareStatement(selectQuery)) {
+                stmt.setString(1, className);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt("id");
+                    }
+                }
+            }
+
+            // If not found, create new
+            try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
+                stmt.setString(1, className);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt("id");
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            LOGGER.severe("Error fetching/creating class ID: " + e.getMessage());
+        }
+        return 1; // Default fallback
     }
 
     // Get all students

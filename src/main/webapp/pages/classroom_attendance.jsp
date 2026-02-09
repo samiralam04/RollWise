@@ -35,7 +35,7 @@
         
         <div class="card shadow">
             <div class="card-header bg-primary text-white">
-                Take Classroom Attendance
+                Take Classroom Attendance (Image Upload)
             </div>
             <div class="card-body text-center">
                 
@@ -52,98 +52,118 @@
                     </datalist>
                 </div>
 
-                <div class="camera-container">
-                    <video id="preview" autoplay playsinline></video>
-                    <div class="overlay" id="statusOverlay">Camera Active</div>
+                <div class="mb-3 text-start">
+                    <label for="classImage" class="form-label">Upload Class Image</label>
+                    <input type="file" class="form-control" id="classImage" accept="image/*" required>
                 </div>
-                <canvas id="canvas"></canvas>
+
+                <div class="mb-3">
+                    <img id="preview" src="#" alt="Class Image Preview" class="img-fluid rounded" style="max-height: 400px; display: none;">
+                </div>
                 
                 <br>
-                <button id="captureBtn" class="btn btn-success btn-lg mt-3">
-                    <i class="bi bi-camera-fill"></i> Capture & Mark Attendance
+                <button id="uploadBtn" class="btn btn-success btn-lg mt-3">
+                    <i class="bi bi-cloud-upload-fill"></i> Upload & Mark Attendance
                 </button>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function() {
-            var video = document.getElementById('preview');
-            var canvas = document.getElementById('canvas');
-            var context = canvas.getContext('2d');
-            var stream = null;
+            // Image preview
+            $("#classImage").change(function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#preview').attr('src', e.target.result).show();
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    $('#preview').hide();
+                }
+            });
 
-            // Request camera access
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ video: true }).then(function(s) {
-                    stream = s;
-                    video.srcObject = stream;
-                    video.play();
-                }).catch(function(err) {
-                    console.log("An error occurred: " + err);
-                    $('#message').html('<div class="alert alert-danger">Cannot access camera: ' + err.message + '</div>');
-                    $('#statusOverlay').text('Camera Error');
-                });
-            } else {
-                 $('#message').html('<div class="alert alert-danger">Camera API not supported in this browser.</div>');
-            }
-
-            $('#captureBtn').click(function() {
+            $('#uploadBtn').click(function() {
                 var className = $('#className').val();
+                var fileInput = document.getElementById('classImage');
+                var file = fileInput.files[0];
+
                 if (!className) {
-                    $('#message').html('<div class="alert alert-warning">Please enter a Class Name.</div>');
+                    Swal.fire('Error', 'Please enter a Class Name.', 'error');
                     return;
                 }
 
-                if (!stream) {
-                    $('#message').html('<div class="alert alert-warning">Camera not active.</div>');
+                if (!file) {
+                    Swal.fire('Error', 'Please select a class image.', 'error');
                     return;
                 }
+
+                var formData = new FormData();
+                formData.append('image', file);
+                formData.append('className', className);
 
                 // Initial UI feedback
                 var btn = $(this);
                 btn.prop('disabled', true).text('Processing...');
-                $('#message').html('');
+                $('#message').html('<div class="alert alert-info">Processing image... Please wait.</div>');
 
-                // Set canvas dimensions to match video
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                
-                // Draw video frame to canvas
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                
-                // Convert to blob
-                canvas.toBlob(function(blob) {
-                    var formData = new FormData();
-                    formData.append('image', blob, 'classroom_capture.jpg');
-                    formData.append('className', className);
-
-                    $.ajax({
-                        url: '<%= request.getContextPath() %>/classroom-attendance',
-                        type: 'POST',
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                        success: function(response) {
-                            btn.prop('disabled', false).text('Capture & Mark Attendance');
+                $.ajax({
+                    url: '<%= request.getContextPath() %>/classroom-attendance',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        btn.prop('disabled', false).text('Upload & Mark Attendance');
+                        $('#message').html('');
+                        
+                        var res = (typeof response === 'string') ? JSON.parse(response) : response;
+                        
+                        if (res.status === "success") {
+                            let presentStudents = res.present_students_list || [];
+                            let count = res.present_count;
                             
-                            // Parse response if string
-                            var res = (typeof response === 'string') ? JSON.parse(response) : response;
-                            
-                            if (res.status === "success") {
-                                $('#message').html('<div class="alert alert-success">Successfully marked present: ' + res.present_count + ' students.</div>');
+                            if (presentStudents.length > 0) {
+                                showSequentialPopups(presentStudents, 0);
                             } else {
-                                $('#message').html('<div class="alert alert-danger">Error: ' + (res.message || "Unknown error") + '</div>');
+                                Swal.fire('Attendance Marked', 'No students detected in the image.', 'info');
                             }
-                        },
-                        error: function(xhr) {
-                            btn.prop('disabled', false).text('Capture & Mark Attendance');
-                            $('#message').html('<div class="alert alert-danger">Request failed: ' + xhr.responseText + '</div>');
+                            
+                        } else {
+                            Swal.fire('Error', res.message || "Unknown error", 'error');
                         }
-                    });
-                }, 'image/jpeg', 0.9);
+                    },
+                    error: function(xhr) {
+                        btn.prop('disabled', false).text('Upload & Mark Attendance');
+                        $('#message').html('');
+                        Swal.fire('Request Failed', xhr.responseText || 'Server Error', 'error');
+                    }
+                });
             });
         });
+
+        function showSequentialPopups(students, index) {
+            if (index >= students.length) {
+                Swal.fire('Completed', 'All specific students marked present. Others marked absent.', 'success');
+                return;
+            }
+
+            let student = students[index];
+            Swal.fire({
+                title: 'Marked Present',
+                text: 'ID: ' + student.id + ' - Name: ' + student.name,
+                icon: 'success',
+                confirmButtonText: 'Next',
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    showSequentialPopups(students, index + 1);
+                }
+            });
+        }
     </script>
 </body>
 </html>

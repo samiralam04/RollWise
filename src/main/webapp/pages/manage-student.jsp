@@ -195,6 +195,21 @@
                                 </div>
                                 <div class="invalid-feedback">Please provide a password.</div>
                             </div>
+                            <div class="col-md-6">
+                                <label for="className" class="form-label">
+                                    <i class="fas fa-users-class me-1"></i> Class Name
+                                </label>
+                                <select class="form-select" id="className" name="className" required>
+                                    <option value="" selected disabled>Select Class</option>
+                                    <option value="CSE-A">CSE-A</option>
+                                    <option value="CSE-B">CSE-B</option>
+                                    <option value="ECE-A">ECE-A</option>
+                                    <option value="ECE-B">ECE-B</option>
+                                    <option value="MECH-A">MECH-A</option>
+                                    <option value="MECH-B">MECH-B</option>
+                                </select>
+                                <div class="invalid-feedback">Please select a class.</div>
+                            </div>
                             <div class="col-12">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-user-plus me-1"></i> Add Student

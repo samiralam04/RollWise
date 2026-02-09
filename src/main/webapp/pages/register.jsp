@@ -46,10 +46,21 @@
                     </div>
                     <div class="mb-3">
                         <label for="role" class="form-label">Register As</label>
-                        <select class="form-control" id="role" name="role" required>
+                        <select class="form-control" id="role" name="role" required onchange="toggleClassName()">
+                            <option value="student">Student/Parent</option>
                             <option value="admin">Admin</option>
                             <option value="teacher">Teacher</option>
-                            <option value="student">Student/Parent</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="class-div">
+                        <label for="className" class="form-label">Class Name</label>
+                         <select class="form-control" id="className" name="className">
+                            <option value="CSE-A">CSE-A</option>
+                            <option value="CSE-B">CSE-B</option>
+                            <option value="ECE-A">ECE-A</option>
+                            <option value="ECE-B">ECE-B</option>
+                            <option value="MECH-A">MECH-A</option>
+                            <option value="MECH-B">MECH-B</option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -75,11 +86,12 @@
                 let email = $("#email").val();
                 let password = $("#password").val();
                 let role = $("#role").val();
+                let className = $("#className").val();
 
                 $.ajax({
                     type: "POST",
                     url: "<%= request.getContextPath() %>/RegisterServlet",
-                    data: { name: name, email: email, password: password, role: role },
+                    data: { name: name, email: email, password: password, role: role, className: className },
                     success: function (response) {
                         if (response.trim() === "success") {
                             Swal.fire({
@@ -108,7 +120,20 @@
                     }
                 });
             });
+
+            // Initial toggle
+            toggleClassName();
         });
+
+        function toggleClassName() {
+            var role = document.getElementById("role").value;
+            var classDiv = document.getElementById("class-div");
+            if (role === "student") {
+                classDiv.style.display = "block";
+            } else {
+                classDiv.style.display = "none";
+            }
+        }
     </script>
 </body>
 </html>
