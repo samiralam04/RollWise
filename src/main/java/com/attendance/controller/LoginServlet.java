@@ -19,7 +19,8 @@ import org.mindrot.jbcrypt.BCrypt;
 public class LoginServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
@@ -30,7 +31,8 @@ public class LoginServlet extends HttpServlet {
         JSONObject jsonResponse = new JSONObject();
 
         // Input Validation
-        if (email == null || password == null || role == null || email.isEmpty() || password.isEmpty() || role.isEmpty()) {
+        if (email == null || password == null || role == null || email.isEmpty() || password.isEmpty()
+                || role.isEmpty()) {
             jsonResponse.put("status", "error");
             jsonResponse.put("message", "All fields are required.");
             response.getWriter().write(jsonResponse.toString());
@@ -60,7 +62,8 @@ public class LoginServlet extends HttpServlet {
                 }
             }
 
-            // If the role is "Teacher" and user is not found in "users" table, check "teacher" table
+            // If the role is "Teacher" and user is not found in "users" table, check
+            // "teacher" table
             if (!loginSuccess && "Teacher".equalsIgnoreCase(role)) {
                 query = "SELECT id, name, password FROM teacher WHERE email = ?";
                 try (PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -85,11 +88,15 @@ public class LoginServlet extends HttpServlet {
                 session.setAttribute("userId", userId);
                 session.setAttribute("username", username);
                 session.setAttribute("email", email);
-                session.setAttribute("role", role);  // Store role
+                session.setAttribute("role", role); // Store role
+
+                System.out.println("DEBUG: Login successful for " + email);
+                System.out.println("DEBUG: Session ID created: " + session.getId());
+                System.out.println("DEBUG: Role stored: " + role);
 
                 // Additional session attribute for teachers
                 if ("Teacher".equalsIgnoreCase(role)) {
-                    session.setAttribute("loggedInTeacherId", userId);  // Store teacher ID for attendance verification
+                    session.setAttribute("loggedInTeacherId", userId); // Store teacher ID for attendance verification
                 }
 
                 // Logging (for debugging)

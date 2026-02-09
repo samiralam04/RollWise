@@ -115,6 +115,16 @@
             </div>
         </div>
 
+        <!-- Quick Actions -->
+        <div class="activity-card" style="margin-bottom: 2rem;">
+            <h3>Quick Actions</h3>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <a href="live_attendance.jsp" class="btn btn-primary" style="text-decoration: none; padding: 0.75rem 1.5rem; background-color: var(--primary); color: white; border-radius: 8px; font-weight: 500;">
+                    <i class="fas fa-camera"></i> Mark Self-Attendance (AI)
+                </a>
+            </div>
+        </div>
+
         <!-- Attendance Section -->
         <div class="attendance-section">
             <div class="attendance-card">
@@ -207,12 +217,15 @@
 
     <script>
         const ctx = document.getElementById('attendanceChart').getContext('2d');
-        new Chart(ctx, {
+                const attendedCount = <%= attendedClasses %>;
+                const absentCount = <%= totalClasses - attendedClasses %>;
+                
+                new Chart(ctx, {
             type: 'pie',
             data: {
                 labels: ['Present', 'Absent'],
                 datasets: [{
-                    data: [<%= attendedClasses %>, <%= totalClasses - attendedClasses %>],
+                    data: [attendedCount, absentCount],
                     backgroundColor: [
                         'rgba(79, 70, 229, 0.8)',
                         'rgba(239, 68, 68, 0.8)'

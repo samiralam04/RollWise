@@ -9,12 +9,12 @@ import java.util.List;
 
 public class AttendanceDAO {
 
-    //  Save Attendance Record
+    // Save Attendance Record
     public boolean saveAttendance(Attendance attendance) {
         String query = "INSERT INTO attendance (student_id, date, status, recorded_at, teacher_id) " +
                 "VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
 
             System.out.println("Saving Attendance: " + attendance); // Log data before inserting
 
@@ -34,14 +34,13 @@ public class AttendanceDAO {
         return false;
     }
 
-
-    //  Get Attendance for a Student
+    // Get Attendance for a Student
     public List<Attendance> getAttendanceByStudent(int studentId) {
         List<Attendance> attendanceList = new ArrayList<>();
         String query = "SELECT * FROM attendance WHERE student_id = ? ORDER BY date DESC";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, studentId);
             ResultSet rs = stmt.executeQuery();
@@ -52,7 +51,8 @@ public class AttendanceDAO {
                 attendance.setStudentId(rs.getInt("student_id"));
                 attendance.setDate(rs.getDate("date").toLocalDate()); // Convert SQL Date to LocalDate
                 attendance.setStatus(rs.getString("status"));
-                attendance.setRecordedAt(rs.getTimestamp("recorded_at").toLocalDateTime()); // Convert SQL Timestamp to LocalDateTime
+                attendance.setRecordedAt(rs.getTimestamp("recorded_at").toLocalDateTime()); // Convert SQL Timestamp to
+                                                                                            // LocalDateTime
                 attendance.setTeacherId(rs.getInt("teacher_id"));
                 attendanceList.add(attendance);
             }
@@ -62,12 +62,12 @@ public class AttendanceDAO {
         return attendanceList;
     }
 
-    //  Get Attendance Percentage for a Student
+    // Get Attendance Percentage for a Student
     public double calculateAttendancePercentage(int studentId) {
         String query = "SELECT COUNT(*) AS total, SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) AS attended " +
                 "FROM attendance WHERE student_id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, studentId);
             ResultSet rs = stmt.executeQuery();
@@ -75,7 +75,8 @@ public class AttendanceDAO {
             if (rs.next()) {
                 int total = rs.getInt("total");
                 int attended = rs.getInt("attended");
-                if (total == 0) return 0; // Avoid division by zero
+                if (total == 0)
+                    return 0; // Avoid division by zero
                 return (attended * 100.0) / total;
             }
         } catch (SQLException e) {
@@ -84,15 +85,15 @@ public class AttendanceDAO {
         return 0;
     }
 
-    //  Get Students with Low Attendance (Below 75%)
+    // Get Students with Low Attendance (Below 75%)
     public List<Integer> getLowAttendanceStudents() {
         List<Integer> lowAttendanceStudents = new ArrayList<>();
         String query = "SELECT student_id FROM attendance " +
                 "GROUP BY student_id HAVING (SUM(CASE WHEN status = 'Present' THEN 1 ELSE 0 END) * 100.0) / COUNT(*) < 75";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(query);
+                ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 lowAttendanceStudents.add(rs.getInt("student_id"));
@@ -107,7 +108,7 @@ public class AttendanceDAO {
     public boolean updateAttendance(int id, String status) {
         String query = "UPDATE attendance SET status = ? WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, status);
             stmt.setInt(2, id);
@@ -120,11 +121,11 @@ public class AttendanceDAO {
         return false;
     }
 
-    //  Delete Attendance Record
+    // Delete Attendance Record
     public boolean deleteAttendance(int id) {
         String query = "DELETE FROM attendance WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, id);
             int rowsDeleted = stmt.executeUpdate();
@@ -133,5 +134,16 @@ public class AttendanceDAO {
             e.printStackTrace();
         }
         return false;
+    }
+
+    // Helper to mark attendance quickly
+    public boolean markAttendance(int studentId, String status, int teacherId) {
+        Attendance attendance = new Attendance();
+        attendance.setStudentId(studentId);
+        attendance.setDate(java.time.LocalDate.now());
+        attendance.setStatus(status);
+        attendance.setRecordedAt(java.time.LocalDateTime.now());
+        attendance.setTeacherId(teacherId); // 0 or null if system/self
+        return saveAttendance(attendance);
     }
 }

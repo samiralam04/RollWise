@@ -1,0 +1,20 @@
+Starting Python AI service...
+Warning: AI definitions missing: No module named 'face_recognition'
+ * Serving Flask app 'app'
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.100:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug:127.0.0.1 - - [09/Feb/2026 19:43:44] "[31m[1mPOST /enroll-face HTTP/1.1[0m" 400 -
+WARNING:root:AI libra./start_python_service.sh: line 18: 37961 Killed: 9               python app.py
+/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/multiprocessing/resource_tracker.py:301: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown: {'/mp-k4as5et1'}
+  warnings.warn(
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x00000001fddd2c40 (most recent call first):
+  <no Python frame>
+00 -

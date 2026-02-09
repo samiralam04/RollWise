@@ -99,6 +99,12 @@
                 <a href="emergency.jsp" class="admin-nav-link">
                     <i class="fas fa-exclamation-triangle"></i> Emergency Alerts
                 </a>
+                <a href="enroll_face.jsp" class="admin-nav-link">
+                    <i class="fas fa-user-plus"></i> Enroll Face
+                </a>
+                <a href="system_status.jsp" class="admin-nav-link">
+                    <i class="fas fa-server"></i> System Status
+                </a>
 
                 <a href="logout.jsp" class="admin-nav-link text-danger">
                     <i class="fas fa-sign-out-alt"></i> Logout
@@ -205,6 +211,12 @@
                     </a>
                     <a href="holiday.jsp" class="admin-btn admin-btn-secondary">
                         <i class="fas fa-calendar-plus"></i> Add Holiday
+                    </a>
+                    <a href="enroll_face.jsp" class="admin-btn admin-btn-secondary">
+                        <i class="fas fa-camera"></i> Enroll Face
+                    </a>
+                    <a href="system_status.jsp" class="admin-btn admin-btn-secondary">
+                        <i class="fas fa-heartbeat"></i> System Health
                     </a>
                 </div>
             </div>

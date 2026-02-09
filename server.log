@@ -1,0 +1,154 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------< org.example:StudentAttendanceManagementSystem >------------
+[INFO] Building StudentAttendanceManagementSystem Maven Webapp 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ war ]---------------------------------
+[INFO] 
+[INFO] --- cargo:1.10.9:run (default-cli) @ StudentAttendanceManagementSystem ---
+[INFO] [en3.ContainerRunMojo] Resolved container artifact org.codehaus.cargo:cargo-core-container-tomcat:jar:1.10.9 for container tomcat9x
+[INFO] [beddedLocalContainer] Tomcat 9.x Embedded starting...
+Feb 09, 2026 5:00:51 PM org.apache.coyote.AbstractProtocol init
+INFO: Initializing ProtocolHandler ["http-nio-8080"]
+Feb 09, 2026 5:00:51 PM org.apache.catalina.core.StandardService startInternal
+INFO: Starting service [Tomcat]
+Feb 09, 2026 5:00:51 PM org.apache.catalina.core.StandardEngine startInternal
+INFO: Starting Servlet engine: [Apache Tomcat/9.0.78]
+Feb 09, 2026 5:00:51 PM org.apache.coyote.AbstractProtocol start
+INFO: Starting ProtocolHandler ["http-nio-8080"]
+Feb 09, 2026 5:00:51 PM org.apache.catalina.startup.ContextConfig getDefaultWebXmlFragment
+INFO: No global web.xml found
+Feb 09, 2026 5:00:51 PM org.apache.tomcat.util.descriptor.web.WebXml setVersion
+WARNING: Unknown version string [5.0]. Default version will be used.
+Feb 09, 2026 5:00:53 PM org.apache.jasper.servlet.TldScanner scanJars
+INFO: At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+Database connected successfully!
+Feb 09, 2026 5:00:53 PM com.attendance.util.DBConnectionListener contextInitialized
+INFO: Database connection initialized and stored in ServletContext!
+[INFO] [beddedLocalContainer] Tomcat 9.x Embedded started on port [8080]
+[INFO] Press Ctrl-C to stop the container...
+Database connected successfully!
+DEBUG: Login successful for admin@gmail.com
+DEBUG: Session ID created: 4EB25A5633267158C92E32CE0606DAF6
+DEBUG: Role stored: admin
+User logged in: admin@gmail.com, Role: admin, UserID: 80
+Database connected successfully!
+Feb 09, 2026 5:02:18 PM com.attendance.service.PythonAIService uploadImage
+SEVERE: Error talking to Python service: Connection refused
+Database connected successfully!
+Feb 09, 2026 5:02:18 PM com.attendance.dao.AuditLogDAO logAction
+SEVERE: Error logging action: ERROR: insert or update on table "attendance_audit_log" violates foreign key constraint "attendance_audit_log_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Feb 09, 2026 5:02:29 PM com.attendance.service.PythonAIService uploadImage
+SEVERE: Error talking to Python service: Connection refused
+Database connected successfully!
+Feb 09, 2026 5:02:29 PM com.attendance.dao.AuditLogDAO logAction
+SEVERE: Error logging action: ERROR: insert or update on table "attendance_audit_log" violates foreign key constraint "attendance_audit_log_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Feb 09, 2026 5:02:30 PM com.attendance.service.PythonAIService uploadImage
+SEVERE: Error talking to Python service: Connection refused
+Database connected successfully!
+Feb 09, 2026 5:02:30 PM com.attendance.dao.AuditLogDAO logAction
+SEVERE: Error logging action: ERROR: insert or update on table "attendance_audit_log" violates foreign key constraint "attendance_audit_log_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+DEBUG: Login successful for admin@gmail.com
+DEBUG: Session ID created: BB43349D1C9DF6743DEB706EE39AADF0
+DEBUG: Role stored: admin
+User logged in: admin@gmail.com, Role: admin, UserID: 80
+Database connected successfully!
+Feb 09, 2026 5:15:41 PM com.attendance.dao.StudentFaceDataDAO addFaceData
+SEVERE: Error adding face data: ERROR: insert or update on table "student_face_data" violates foreign key constraint "student_face_data_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:15:41 PM com.attendance.dao.AuditLogDAO logAction
+SEVERE: Error logging action: ERROR: insert or update on table "attendance_audit_log" violates foreign key constraint "attendance_audit_log_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:15:55 PM com.attendance.dao.StudentFaceDataDAO addFaceData
+SEVERE: Error adding face data: ERROR: insert or update on table "student_face_data" violates foreign key constraint "student_face_data_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:15:55 PM com.attendance.dao.AuditLogDAO logAction
+SEVERE: Error logging action: ERROR: insert or update on table "attendance_audit_log" violates foreign key constraint "attendance_audit_log_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:15:57 PM com.attendance.dao.StudentFaceDataDAO addFaceData
+SEVERE: Error adding face data: ERROR: insert or update on table "student_face_data" violates foreign key constraint "student_face_data_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:15:57 PM com.attendance.dao.AuditLogDAO logAction
+SEVERE: Error logging action: ERROR: insert or update on table "attendance_audit_log" violates foreign key constraint "attendance_audit_log_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:15:57 PM com.attendance.dao.StudentFaceDataDAO addFaceData
+SEVERE: Error adding face data: ERROR: insert or update on table "student_face_data" violates foreign key constraint "student_face_data_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:15:57 PM com.attendance.dao.AuditLogDAO logAction
+SEVERE: Error logging action: ERROR: insert or update on table "attendance_audit_log" violates foreign key constraint "attendance_audit_log_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:15:57 PM com.attendance.dao.StudentFaceDataDAO addFaceData
+SEVERE: Error adding face data: ERROR: insert or update on table "student_face_data" violates foreign key constraint "student_face_data_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:15:57 PM com.attendance.dao.AuditLogDAO logAction
+SEVERE: Error logging action: ERROR: insert or update on table "attendance_audit_log" violates foreign key constraint "attendance_audit_log_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:15:57 PM com.attendance.dao.StudentFaceDataDAO addFaceData
+SEVERE: Error adding face data: ERROR: insert or update on table "student_face_data" violates foreign key constraint "student_face_data_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:15:57 PM com.attendance.dao.AuditLogDAO logAction
+SEVERE: Error logging action: ERROR: insert or update on table "attendance_audit_log" violates foreign key constraint "attendance_audit_log_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:16:47 PM com.attendance.dao.StudentFaceDataDAO addFaceData
+SEVERE: Error adding face data: ERROR: insert or update on table "student_face_data" violates foreign key constraint "student_face_data_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:16:47 PM com.attendance.dao.AuditLogDAO logAction
+SEVERE: Error logging action: ERROR: insert or update on table "attendance_audit_log" violates foreign key constraint "attendance_audit_log_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:16:56 PM com.attendance.dao.StudentFaceDataDAO addFaceData
+SEVERE: Error adding face data: ERROR: insert or update on table "student_face_data" violates foreign key constraint "student_face_data_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:16:57 PM com.attendance.dao.AuditLogDAO logAction
+SEVERE: Error logging action: ERROR: insert or update on table "attendance_audit_log" violates foreign key constraint "attendance_audit_log_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+DEBUG: Login successful for admin@gmail.com
+DEBUG: Session ID created: 54120D18E6A8C9FBCD1530D1725EF647
+DEBUG: Role stored: admin
+User logged in: admin@gmail.com, Role: admin, UserID: 80
+Database connected successfully!
+Feb 09, 2026 5:22:05 PM com.attendance.dao.StudentFaceDataDAO addFaceData
+SEVERE: Error adding face data: ERROR: insert or update on table "student_face_data" violates foreign key constraint "student_face_data_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:22:05 PM com.attendance.dao.AuditLogDAO logAction
+SEVERE: Error logging action: ERROR: insert or update on table "attendance_audit_log" violates foreign key constraint "attendance_audit_log_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:22:06 PM com.attendance.dao.StudentFaceDataDAO addFaceData
+SEVERE: Error adding face data: ERROR: insert or update on table "student_face_data" violates foreign key constraint "student_face_data_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:22:06 PM com.attendance.dao.AuditLogDAO logAction
+SEVERE: Error logging action: ERROR: insert or update on table "attendance_audit_log" violates foreign key constraint "attendance_audit_log_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:22:22 PM com.attendance.dao.StudentFaceDataDAO addFaceData
+SEVERE: Error adding face data: ERROR: insert or update on table "student_face_data" violates foreign key constraint "student_face_data_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+Database connected successfully!
+Feb 09, 2026 5:22:22 PM com.attendance.dao.AuditLogDAO logAction
+SEVERE: Error logging action: ERROR: insert or update on table "attendance_audit_log" violates foreign key constraint "attendance_audit_log_student_id_fkey"
+  Detail: Key (student_id)=(55) is not present in table "students".
+[INFO] [beddedLocalContainer] Tomcat 9.x Embedded is stopping...
+Database connection closed successfully!
+[INFO] [beddedLocalContainer] Tomcat 9.x Embedded is stopped

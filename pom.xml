@@ -18,13 +18,15 @@
 
   <dependencies>
 
-    <!-- Jakarta EE API -->
+    <!-- Jakarta EE API (Removed to avoid conflict with javax.servlet) -->
+    <!--
     <dependency>
       <groupId>jakarta.platform</groupId>
       <artifactId>jakarta.jakartaee-web-api</artifactId>
       <version>9.1.0</version>
       <scope>provided</scope>
     </dependency>
+    -->
 
     <!-- JavaMail API (Fixed) -->
     <dependency>
@@ -160,15 +162,31 @@
         </configuration>
       </plugin>
 
-      <!-- Fixed: Tomcat 9 Plugin -->
+      <!-- Cargo Plugin to run Tomcat 9 (Compatible with Java 8+ and javax.*) -->
       <plugin>
-        <groupId>org.apache.tomcat.maven</groupId>
-        <artifactId>tomcat7-maven-plugin</artifactId>
-        <version>2.2</version>
+        <groupId>org.codehaus.cargo</groupId>
+        <artifactId>cargo-maven3-plugin</artifactId>
+        <version>1.10.9</version>
         <configuration>
-          <url>http://localhost:8080/manager/text</url>
-          <server>TomcatServer</server>
-          <path>/StudentAttendanceManagementSystem</path>
+          <container>
+            <containerId>tomcat9x</containerId>
+            <type>embedded</type>
+          </container>
+          <configuration>
+            <properties>
+              <cargo.servlet.port>8080</cargo.servlet.port>
+            </properties>
+          </configuration>
+          <deployables>
+            <deployable>
+              <groupId>org.example</groupId>
+              <artifactId>StudentAttendanceManagementSystem</artifactId>
+              <type>war</type>
+              <properties>
+                <context>StudentAttendanceManagementSystem</context>
+              </properties>
+            </deployable>
+          </deployables>
         </configuration>
       </plugin>
 
