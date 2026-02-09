@@ -16,7 +16,8 @@ public class AttendanceDAO {
                 "ON CONFLICT (student_id, date) DO UPDATE SET " +
                 "status = EXCLUDED.status, " +
                 "recorded_at = EXCLUDED.recorded_at, " +
-                "teacher_id = EXCLUDED.teacher_id";
+                "teacher_id = EXCLUDED.teacher_id " +
+                "WHERE attendance.status != 'Present' OR EXCLUDED.status = 'Present'";
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(query)) {
 

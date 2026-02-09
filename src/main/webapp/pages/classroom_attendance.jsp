@@ -127,9 +127,9 @@
                             let count = res.present_count;
                             
                             if (presentStudents.length > 0) {
-                                showSequentialPopups(presentStudents, 0);
+                                showSequentialPopups(presentStudents, 0, res.warning);
                             } else {
-                                Swal.fire('Attendance Marked', 'No students detected in the image.', 'info');
+                                Swal.fire('Attendance Marked', res.warning || 'No students detected in the image.', 'info');
                             }
                             
                         } else {
@@ -145,9 +145,11 @@
             });
         });
 
-        function showSequentialPopups(students, index) {
+        function showSequentialPopups(students, index, warning) {
             if (index >= students.length) {
-                Swal.fire('Completed', 'All specific students marked present. Others marked absent.', 'success');
+                let msg = 'All specific students marked present. Others marked absent.';
+                if (warning) msg += '\n\nNote: ' + warning;
+                Swal.fire('Completed', msg, warning ? 'warning' : 'success');
                 return;
             }
 
@@ -160,7 +162,7 @@
                 allowOutsideClick: false
             }).then((result) => {
                 if (result.isConfirmed) {
-                    showSequentialPopups(students, index + 1);
+                    showSequentialPopups(students, index + 1, warning);
                 }
             });
         }

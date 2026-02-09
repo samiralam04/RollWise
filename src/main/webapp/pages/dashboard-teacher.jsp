@@ -39,7 +39,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/StudentAttendanceManagementSystem/assets/css/teacher.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="loading-overlay" id="loadingSpinner">
@@ -60,113 +60,164 @@
         <h2 class="text-center">Teacher Dashboard</h2>
 
         <div class="row">
+            <!-- Left Column: Upload Attendance -->
             <div class="col-md-6">
-                <div class="card p-3">
-                    <h4>Upload Attendance</h4>
+                <div class="card p-3 h-100">
+                    <h4><i class="fas fa-file-upload"></i> Upload Attendance</h4>
+                    <p class="text-muted mb-3">Upload an Excel file with attendance data</p>
                     <form id="uploadForm" action="<%= request.getContextPath() %>/UploadExcelServlet" method="POST" enctype="multipart/form-data">
-                        <input type="file" name="file" class="form-control mb-2" required>
-                        <button type="submit" class="btn btn-success">Upload</button>
+                        <div class="mb-3">
+                            <input type="file" name="file" class="form-control" accept=".xlsx,.xls" required>
+                            <small class="form-text text-muted">Supported formats: .xlsx, .xls</small>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-upload"></i> Upload & Process
+                        </button>
                     </form>
                 </div>
             </div>
 
+            <!-- Right Column: AI Classroom Attendance -->
             <div class="col-md-6">
-                <div class="card p-3">
-                    <h4>Mark Attendance Manually</h4>
-                    <form id="manualAttendanceForm">
-                        <div class="mb-2">
-                            <label class="form-label">Student ID (User ID)</label>
-                            <input type="number" name="student_id" class="form-control" required placeholder="Enter Student's User ID">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Teacher ID</label>
-                            <input type="number" name="teacher_id" class="form-control" value="<%= session.getAttribute("userId") %>" readonly>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Date</label>
-                            <input type="date" name="date" class="form-control" value="<%= new java.sql.Date(System.currentTimeMillis()) %>" required>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Status</label>
-                            <select name="status" class="form-select" required>
-                                <option value="Present">Present</option>
-                                <option value="Absent">Absent</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Save Attendance</button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="col-md-12 mt-4">
-                <div class="card p-3 bg-light">
+                <div class="card p-3 h-100">
                     <h4><i class="fas fa-robot"></i> AI Classroom Attendance</h4>
-                    <p>Use facial recognition to mark attendance for the whole class instantly.</p>
-                    <a href="classroom_attendance.jsp" class="btn btn-primary">
-                         Launch AI Attendance
+                    <p class="text-muted mb-3">Use facial recognition to mark attendance for the whole class instantly.</p>
+                    <div class="mt-3">
+                        <div class="d-flex align-items-center mb-2 text-muted">
+                            <i class="fas fa-camera me-2"></i>
+                            <span>Real-time face detection</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2 text-muted">
+                            <i class="fas fa-bolt me-2"></i>
+                            <span>Instant processing</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-3 text-muted">
+                            <i class="fas fa-users me-2"></i>
+                            <span>Whole class at once</span>
+                        </div>
+                    </div>
+                    <a href="classroom_attendance.jsp" class="btn w-100 mt-2" style="background-color: #5e72e4; color: white;">
+                        <i class="fas fa-play-circle"></i> Launch AI Attendance
                     </a>
                 </div>
             </div>
         </div>
 
+        <!-- Second Row: Manual Attendance -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card p-3">
+                    <h4><i class="fas fa-edit"></i> Mark Attendance Manually</h4>
+                    <form id="manualAttendanceForm">
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label">Student ID (User ID)</label>
+                                <input type="number" name="student_id" class="form-control" required placeholder="Enter Student ID">
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label">Teacher ID</label>
+                                <input type="number" name="teacher_id" class="form-control" value="<%= session.getAttribute("userId") %>" readonly>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label">Date</label>
+                                <input type="date" name="date" class="form-control" value="<%= new java.sql.Date(System.currentTimeMillis()) %>" required>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label">Status</label>
+                                <select name="status" class="form-select" required>
+                                    <option value="Present">Present</option>
+                                    <option value="Absent">Absent</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-save"></i> Save Attendance Record
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Report -->
         <div class="card p-3 mt-4">
-            <h4>Student Attendance Report</h4>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Student ID</th>
-                        <th>Teacher ID</th>
-                        <th>Date</th>
-                        <th>Parent Email</th>
-                        <th>Total Classes</th>
-                        <th>Attended</th>
-                        <th>Attendance %</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <%
-                        if (conn != null) {
-                            try (PreparedStatement ps = conn.prepareStatement(
-                                    "SELECT a.student_id, u.username AS student_name, a.teacher_id, a.date, p.parent_email, " +
-                                    "COUNT(a.student_id) OVER (PARTITION BY a.student_id) AS total_classes, " +
-                                    "SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) OVER (PARTITION BY a.student_id) AS attended_classes " +
-                                    "FROM attendance a " +
-                                    "JOIN users u ON a.student_id = u.id " +
-                                    "LEFT JOIN parents p ON a.parent_email_id = p.id " +
-                                    "ORDER BY a.date DESC"
-                            );
-                                 ResultSet rs = ps.executeQuery()) {
-                                while (rs.next()) {
-                                    String studentId = rs.getString("student_id");
-                                    String teacherId = rs.getString("teacher_id");
-                                    String date = rs.getString("date");
-                                    String parentEmail = rs.getString("parent_email");
-                                    int totalClasses = rs.getInt("total_classes");
-                                    int attendedClasses = rs.getInt("attended_classes");
-                                    double percentage = (totalClasses > 0) ? (attendedClasses * 100.0 / totalClasses) : 0;
-                    %>
-                            <tr>
-                                <td><%= studentId %> (<%= rs.getString("student_name") %>)</td>
-                                <td><%= teacherId %></td>
-                                <td><%= date %></td>
-                                <td><%= (parentEmail != null && !parentEmail.isEmpty()) ? parentEmail : "N/A" %></td>
-                                <td><%= totalClasses %></td>
-                                <td><%= attendedClasses %></td>
-                                <td><%= String.format("%.2f", percentage) %> %</td>
-                            </tr>
-                    <%
+            <h4><i class="fas fa-chart-bar"></i> Student Attendance Report</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Teacher ID</th>
+                            <th>Date</th>
+                            <th>Parent Email</th>
+                            <th>Total Classes</th>
+                            <th>Attended</th>
+                            <th>Attendance %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <%
+                            if (conn != null) {
+                                try (PreparedStatement ps = conn.prepareStatement(
+                                        "SELECT a.student_id, u.username AS student_name, a.teacher_id, a.date, p.parent_email, " +
+                                        "COUNT(a.student_id) OVER (PARTITION BY a.student_id) AS total_classes, " +
+                                        "SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) OVER (PARTITION BY a.student_id) AS attended_classes " +
+                                        "FROM attendance a " +
+                                        "JOIN users u ON a.student_id = u.id " +
+                                        "LEFT JOIN parents p ON a.parent_email_id = p.id " +
+                                        "ORDER BY a.date DESC"
+                                );
+                                     ResultSet rs = ps.executeQuery()) {
+                                    while (rs.next()) {
+                                        String studentId = rs.getString("student_id");
+                                        String teacherId = rs.getString("teacher_id");
+                                        String date = rs.getString("date");
+                                        String parentEmail = rs.getString("parent_email");
+                                        int totalClasses = rs.getInt("total_classes");
+                                        int attendedClasses = rs.getInt("attended_classes");
+                                        double percentage = (totalClasses > 0) ? (attendedClasses * 100.0 / totalClasses) : 0;
+                        %>
+                                <tr>
+                                    <td><strong><%= studentId %></strong> (<%= rs.getString("student_name") %>)</td>
+                                    <td><%= teacherId %></td>
+                                    <td><%= date %></td>
+                                    <td><%= (parentEmail != null && !parentEmail.isEmpty()) ? parentEmail : "N/A" %></td>
+                                    <td><span class="badge bg-info"><%= totalClasses %></span></td>
+                                    <td><span class="badge bg-success"><%= attendedClasses %></span></td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar <%= percentage >= 75 ? "bg-success" : percentage >= 50 ? "bg-warning" : "bg-danger" %>" 
+                                                 role="progressbar" 
+                                                 style="width: <%= percentage %>%"
+                                                 aria-valuenow="<%= percentage %>" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                <%= String.format("%.1f", percentage) %>%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                        <%
+                                    }
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
                                 }
-                            } catch (SQLException e) {
-                                e.printStackTrace();
                             }
-                        }
-                    %>
-                </tbody>
-            </table>
+                        %>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
+    
+    <!-- Logout Button -->
     <div class="logout-container">
-        <a href="logout.jsp" class="btn btn-danger">Logout</a>
+        <a href="logout.jsp" class="btn btn-danger">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
     </div>
 
     <script>
@@ -266,7 +317,7 @@
                         text: data.message,
                         confirmButtonColor: "#3085d6",
                     }).then(() => {
-                        refreshAttendanceTable();
+                        location.reload();
                         this.reset();
                     });
                 } else {
@@ -290,7 +341,16 @@
             });
         });
 
+        // Add visual feedback for AI Attendance button
+        document.querySelector('a[href="classroom_attendance.jsp"]').addEventListener('mouseover', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+        });
 
+        document.querySelector('a[href="classroom_attendance.jsp"]').addEventListener('mouseout', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+        });
     </script>
 </body>
 </html>

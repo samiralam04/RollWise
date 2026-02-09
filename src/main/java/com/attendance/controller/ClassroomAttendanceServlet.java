@@ -130,6 +130,12 @@ public class ClassroomAttendanceServlet extends HttpServlet {
                 responseJson.put("present_count", markedCount);
                 responseJson.put("present_students_list", presentStudentsResponse);
 
+                // Check for unrecognized faces
+                int totalFacesDetected = result.optInt("total_faces_detected", 0);
+                if (totalFacesDetected > presentList.size()) {
+                    responseJson.put("warning", "One or more students were not recognized.");
+                }
+
                 response.setContentType("application/json");
                 response.getWriter().write(responseJson.toString());
 
