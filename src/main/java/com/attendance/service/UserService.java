@@ -81,4 +81,19 @@ public class UserService {
         }
         return null;
     }
+
+    // Check if Admin Exists
+    public boolean isAdminExists() {
+        String query = "SELECT COUNT(*) FROM users WHERE role = 'Admin'";
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(query);
+                ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

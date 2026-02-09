@@ -66,6 +66,7 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function () {
             $("#registerForm").submit(function (event) {
@@ -80,14 +81,30 @@
                     url: "<%= request.getContextPath() %>/RegisterServlet",
                     data: { name: name, email: email, password: password, role: role },
                     success: function (response) {
-                        if (response === "success") {
-                            $("#success-msg").removeClass("d-none");
-                            setTimeout(function () {
+                        if (response.trim() === "success") {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Registration Successful!',
+                                text: 'Redirecting to login...',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
                                 window.location.href = "<%= request.getContextPath() %>/pages/login.jsp";
-                            }, 2000);
+                            });
                         } else {
-                            $("#error-msg").text(response).removeClass("d-none");
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Registration Failed',
+                                text: response
+                            });
                         }
+                    },
+                    error: function() {
+                         Swal.fire({
+                                icon: 'error',
+                                title: 'Server Error',
+                                text: 'Something went wrong. Please try again.'
+                            });
                     }
                 });
             });

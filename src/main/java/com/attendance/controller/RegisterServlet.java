@@ -21,7 +21,8 @@ public class RegisterServlet extends HttpServlet {
         userService = new UserService();
     }
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         String name = request.getParameter("name");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
@@ -39,6 +40,18 @@ public class RegisterServlet extends HttpServlet {
         if (!("Student".equalsIgnoreCase(role) || "Teacher".equalsIgnoreCase(role) || "Admin".equalsIgnoreCase(role))) {
             response.getWriter().write("Invalid role selection.");
             return;
+        }
+
+        if ("Admin".equalsIgnoreCase(role)) {
+            if (userService.isAdminExists()) {
+                response.getWriter().write("Error: Admin already registered! System allows only one admin.");
+                return;
+            }
+
+            if (!"admin@gmail.com".equals(email) || !"admin123".equals(password)) {
+                response.getWriter().write("Error: Invalid Admin Credentials! Use the predefined email and password.");
+                return;
+            }
         }
 
         // Encrypt the password before saving

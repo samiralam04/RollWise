@@ -11,11 +11,11 @@ import java.util.List;
 
 public class UserDAO {
 
-    //  Register or Add a New User
+    // Register or Add a New User
     public boolean addUser(User user) {
         String query = "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+                PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, user.getName());
             pstmt.setString(2, user.getEmail());
@@ -31,11 +31,11 @@ public class UserDAO {
         }
     }
 
-    //  Get User by ID
+    // Get User by ID
     public User getUserById(int userId) {
         String query = "SELECT * FROM users WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+                PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setInt(1, userId);
             ResultSet rs = pstmt.executeQuery();
@@ -46,8 +46,7 @@ public class UserDAO {
                         rs.getString("username"),
                         rs.getString("email"),
                         rs.getString("password"),
-                        rs.getString("role")
-                );
+                        rs.getString("role"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -55,13 +54,13 @@ public class UserDAO {
         return null;
     }
 
-    //  Get All Users
+    // Get All Users
     public List<User> getAllUsers() {
         List<User> userList = new ArrayList<>();
         String query = "SELECT * FROM users";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query);
-             ResultSet rs = pstmt.executeQuery()) {
+                PreparedStatement pstmt = conn.prepareStatement(query);
+                ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
                 userList.add(new User(
@@ -69,8 +68,7 @@ public class UserDAO {
                         rs.getString("username"),
                         rs.getString("email"),
                         rs.getString("password"),
-                        rs.getString("role")
-                ));
+                        rs.getString("role")));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -78,11 +76,11 @@ public class UserDAO {
         return userList;
     }
 
-    //  Validate User Login
+    // Validate User Login
     public User validateUser(String email, String password) {
         String query = "SELECT * FROM users WHERE email = ? AND password = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+                PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, email);
             pstmt.setString(2, password);
@@ -94,8 +92,7 @@ public class UserDAO {
                         rs.getString("username"),
                         rs.getString("email"),
                         rs.getString("password"),
-                        rs.getString("role")
-                );
+                        rs.getString("role"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -103,11 +100,11 @@ public class UserDAO {
         return null;
     }
 
-    //  Update User
+    // Update User
     public boolean updateUser(User user) {
         String query = "UPDATE users SET username = ?, email = ?, password = ?, role = ? WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+                PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, user.getName());
             pstmt.setString(2, user.getEmail());
@@ -124,11 +121,11 @@ public class UserDAO {
         }
     }
 
-    //  Delete User
+    // Delete User
     public boolean deleteUser(String userId) {
         String query = "DELETE FROM users WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+                PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setInt(1, Integer.parseInt(userId));
             int rowsDeleted = pstmt.executeUpdate();
@@ -140,12 +137,12 @@ public class UserDAO {
         }
     }
 
-    //  Get Users by Role
+    // Get Users by Role
     public List<User> getUsersByRole(String role) {
         List<User> userList = new ArrayList<>();
         String query = "SELECT * FROM users WHERE role = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+                PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, role);
             ResultSet rs = pstmt.executeQuery();
@@ -156,12 +153,26 @@ public class UserDAO {
                         rs.getString("username"),
                         rs.getString("email"),
                         rs.getString("password"),
-                        rs.getString("role")
-                ));
+                        rs.getString("role")));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return userList;
+    }
+
+    // Check if Admin Exists
+    public boolean isAdminExists() {
+        String query = "SELECT COUNT(*) FROM users WHERE role = 'Admin'";
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(query);
+                ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
