@@ -39,6 +39,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/StudentAttendanceManagementSystem/assets/css/teacher.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -142,6 +143,76 @@
             </div>
         </div>
 
+        <!-- Attendance Risk Radar -->
+        <div class="card p-3 mt-4">
+            <h4><i class="fas fa-satellite-dish"></i> Predictive Attendance Risk Radar</h4>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Attendance %</th>
+                                    <th>Trend</th>
+                                    <th>Risk Level</th>
+                                    <th>Projected %</th>
+                                    <th>Suggested Action</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <%
+                                    com.attendance.service.AttendanceRiskService riskService = new com.attendance.service.AttendanceRiskService();
+                                    java.util.List<com.attendance.model.StudentRiskDTO> riskReport = riskService.analyzeRisk();
+                                    
+                                    // Sort by risk score (descending)
+                                    riskReport.sort((a, b) -> Integer.compare(b.getRiskScore(), a.getRiskScore()));
+
+                                    for (com.attendance.model.StudentRiskDTO dto : riskReport) {
+                                        String riskClass = "bg-success text-white";
+                                        if ("AT-RISK".equals(dto.getRiskLevel())) riskClass = "bg-danger text-white";
+                                        else if ("WATCH".equals(dto.getRiskLevel())) riskClass = "bg-warning text-dark";
+                                        
+                                        String trendIcon = "fa-arrow-right";
+                                        String trendColor = "text-muted";
+                                        if ("UP".equals(dto.getTrend())) { trendIcon = "fa-arrow-up"; trendColor = "text-success"; }
+                                        else if ("DOWN".equals(dto.getTrend())) { trendIcon = "fa-arrow-down"; trendColor = "text-danger"; }
+                                %>
+                                <tr>
+                                    <td><%= dto.getName() %></td>
+                                    <td><%= String.format("%.1f", dto.getCurrentAttendance()) %>%</td>
+                                    <td class="text-center"><i class="fas <%= trendIcon %> <%= trendColor %>"></i> <%= dto.getTrend() %></td>
+                                    <td><span class="badge <%= riskClass %>"><%= dto.getRiskLevel() %></span></td>
+                                    <td><%= String.format("%.1f", dto.getPredictedFinalAttendance()) %>%</td>
+                                    <td><small><%= dto.getSuggestedAction() %></small></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" onclick='showRiskChart(<%= new com.google.gson.Gson().toJson(dto.getWeeklyPresence()) %>, "<%= dto.getName() %>")'>
+                                            <i class="fas fa-chart-line"></i> View
+                                        </button>
+                                    </td>
+                                </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                     <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0">Attendance Trend (Last 4 Weeks)</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="riskChart"></canvas>
+                            <p id="chartPlaceholder" class="text-center text-muted mt-5">Select a student to view trend.</p>
+                        </div>
+                     </div>
+                </div>
+            </div>
+        </div>
+
+
+
         <!-- Attendance Report -->
         <div class="card p-3 mt-4">
             <h4><i class="fas fa-chart-bar"></i> Student Attendance Report</h4>
@@ -221,6 +292,55 @@
     </div>
 
     <script>
+        let riskChartInstance = null;
+
+        function showRiskChart(dataPoints, studentName) {
+            const ctx = document.getElementById('riskChart').getContext('2d');
+            document.getElementById('chartPlaceholder').style.display = 'none';
+
+            if (riskChartInstance) {
+                riskChartInstance.destroy();
+            }
+
+            riskChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['4 Weeks Ago', '3 Weeks Ago', '2 Weeks Ago', 'Last Week'],
+                    datasets: [{
+                        label: 'Days Present',
+                        data: dataPoints,
+                        borderColor: '#5e72e4',
+                        backgroundColor: 'rgba(94, 114, 228, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Attendance Trend for ' + studentName
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: 7, // Assuming 5-7 days a week
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
         function showLoading(message, submessage) {
             const spinner = document.getElementById("loadingSpinner");
             const loadingMessage = document.getElementById("loadingMessage");
