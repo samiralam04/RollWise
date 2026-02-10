@@ -17,7 +17,7 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item">
-          <a class="nav-link active" href="<%= request.getContextPath() %>/<%= dashboardLink %>">Dashboard</a>
+          <a class="nav-link active" href="<%= request.getContextPath() %>/pages/login.jsp">Dashboard</a>
         </li>
         <% if (navUser != null) { %>
             <li class="nav-item">

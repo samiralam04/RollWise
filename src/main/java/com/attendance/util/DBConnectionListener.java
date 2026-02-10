@@ -5,7 +5,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 import java.sql.Connection;
-import java.util.logging.Level;
+
 import java.util.logging.Logger;
 
 @WebListener

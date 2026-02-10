@@ -2,7 +2,6 @@ package com.attendance.controller;
 
 import com.attendance.service.EmailNotifier;
 import com.attendance.util.DBConnection;
-import com.attendance.service.EmailNotifier;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -23,7 +22,8 @@ public class EmergencyServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(EmergencyServlet.class.getName());
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         String title = request.getParameter("title");
         String description = request.getParameter("description");
         String dateString = request.getParameter("date");
@@ -50,8 +50,8 @@ public class EmergencyServlet extends HttpServlet {
 
         // Database connection
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                     "INSERT INTO emergency (title, description, date) VALUES (?, ?, ?)")) {
+                PreparedStatement stmt = conn.prepareStatement(
+                        "INSERT INTO emergency (title, description, date) VALUES (?, ?, ?)")) {
 
             stmt.setString(1, title);
             stmt.setString(2, description);
@@ -62,7 +62,7 @@ public class EmergencyServlet extends HttpServlet {
             List<String> parentEmails = new ArrayList<>();
             String fetchParentEmailsQuery = "SELECT parent_email FROM parents";
             try (PreparedStatement emailStmt = conn.prepareStatement(fetchParentEmailsQuery);
-                 ResultSet rs = emailStmt.executeQuery()) {
+                    ResultSet rs = emailStmt.executeQuery()) {
                 while (rs.next()) {
                     parentEmails.add(rs.getString("parent_email"));
                 }
@@ -77,9 +77,9 @@ public class EmergencyServlet extends HttpServlet {
                 EmailNotifier.sendAlertToParents(parentEmails, alertMessage);
             }
 
-
             // Redirect with success message
-            response.sendRedirect(request.getContextPath() + "/pages/emergency.jsp?success=Emergency%20holiday%20added");
+            response.sendRedirect(
+                    request.getContextPath() + "/pages/emergency.jsp?success=Emergency%20holiday%20added");
 
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Database error: {0}", e.getMessage());

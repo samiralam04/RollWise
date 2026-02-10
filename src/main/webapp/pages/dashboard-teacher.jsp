@@ -194,9 +194,17 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-primary" onclick="viewExcuse('<%= reqId %>', '<%= cat %>', '<%= rec %>', `<%= text.replace("`", "").replace("'", "\\'").replace("\n", "\\n") %>`, '<%= docPath %>', '<%= absDate != null ? absDate : "" %>', '<%= reason != null ? reason.replace("'", "\\'") : "" %>')">
+                                        <button type="button" class="btn btn-sm btn-primary" 
+                                            data-id="<%= reqId %>"
+                                            data-cat="<%= cat %>"
+                                            data-rec="<%= rec %>"
+                                            data-docpath="<%= docPath %>"
+                                            data-date="<%= absDate != null ? absDate : "" %>"
+                                            data-reason="<%= reason != null ? reason.replace("\"", "&quot;") : "" %>"
+                                            onclick="openExcuseModal(this)">
                                             Review
                                         </button>
+                                        <div id="excuse-text-<%= reqId %>" style="display:none;"><%= text != null ? text.replace("<", "&lt;").replace(">", "&gt;") : "" %></div>
                                     </td>
                                 </tr>
                                 <%
@@ -259,6 +267,18 @@
             document.addEventListener('DOMContentLoaded', function() {
                  excuseModalVar = new bootstrap.Modal(document.getElementById('excuseModal'));
             });
+
+            function openExcuseModal(button) {
+                const id = button.getAttribute('data-id');
+                const cat = button.getAttribute('data-cat');
+                const rec = button.getAttribute('data-rec');
+                const docPath = button.getAttribute('data-docpath');
+                const date = button.getAttribute('data-date');
+                const reason = button.getAttribute('data-reason');
+                const text = document.getElementById('excuse-text-' + id).textContent;
+
+                viewExcuse(id, cat, rec, text, docPath, date, reason);
+            }
 
             function viewExcuse(id, cat, rec, text, docPath, date, reason) {
                 currentExcuseId = id;
@@ -354,7 +374,10 @@
                                     <td><%= String.format("%.1f", dto.getPredictedFinalAttendance()) %>%</td>
                                     <td><small><%= dto.getSuggestedAction() %></small></td>
                                     <td>
-                                        <button class="btn btn-sm btn-info" onclick='showRiskChart(<%= new com.google.gson.Gson().toJson(dto.getWeeklyPresence()) %>, "<%= dto.getName() %>")'>
+                                        <button class="btn btn-sm btn-info" 
+                                            data-risk-data='<%= new com.google.gson.Gson().toJson(dto.getWeeklyPresence()) %>'
+                                            data-student-name="<%= dto.getName() %>"
+                                            onclick="openRiskChart(this)">
                                             <i class="fas fa-chart-line"></i> View
                                         </button>
                                     </td>
@@ -460,6 +483,22 @@
 
     <script>
         let riskChartInstance = null;
+
+        function openRiskChart(button) {
+            const dataOriginal = button.getAttribute('data-risk-data');
+            const studentName = button.getAttribute('data-student-name');
+            
+            // Parse the JSON data if it's a string
+            let dataPoints = [];
+            try {
+                dataPoints = JSON.parse(dataOriginal);
+            } catch (e) {
+                console.error("Failed to parse risk data", e);
+                return;
+            }
+            
+            showRiskChart(dataPoints, studentName);
+        }
 
         function showRiskChart(dataPoints, studentName) {
             const ctx = document.getElementById('riskChart').getContext('2d');
@@ -591,7 +630,7 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP error! status: \${response.status}`);
                 }
                 return response.json();
             })

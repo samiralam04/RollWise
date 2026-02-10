@@ -11,15 +11,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
 public class AdminServlet extends HttpServlet {
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         String action = request.getPathInfo();
 
         if (action == null) {
@@ -45,7 +45,8 @@ public class AdminServlet extends HttpServlet {
         }
     }
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         String action = request.getPathInfo();
 
         if (action == null) {
@@ -65,11 +66,12 @@ public class AdminServlet extends HttpServlet {
         }
     }
 
-    private void listTeachers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private void listTeachers(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         List<Teacher> teachers = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM teachers");
-             ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement("SELECT * FROM teachers");
+                ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 teachers.add(new Teacher(rs.getInt("id"), rs.getString("name"), rs.getString("email")));
@@ -83,12 +85,13 @@ public class AdminServlet extends HttpServlet {
         }
     }
 
-    private void addTeacher(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private void addTeacher(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         String name = request.getParameter("name");
         String email = request.getParameter("email");
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("INSERT INTO teachers (name, email) VALUES (?, ?)")) {
+                PreparedStatement stmt = conn.prepareStatement("INSERT INTO teachers (name, email) VALUES (?, ?)")) {
 
             stmt.setString(1, name);
             stmt.setString(2, email);
@@ -102,11 +105,12 @@ public class AdminServlet extends HttpServlet {
         }
     }
 
-    private void deleteTeacher(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private void deleteTeacher(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("DELETE FROM teachers WHERE id = ?")) {
+                PreparedStatement stmt = conn.prepareStatement("DELETE FROM teachers WHERE id = ?")) {
 
             stmt.setInt(1, id);
             stmt.executeUpdate();
@@ -119,12 +123,13 @@ public class AdminServlet extends HttpServlet {
         }
     }
 
-    private void listHolidays(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private void listHolidays(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         List<String> holidays = new ArrayList<>();
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM holiday");
-             ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement("SELECT * FROM holiday");
+                ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 holidays.add(rs.getString("date") + " - " + rs.getString("reason"));
@@ -138,12 +143,13 @@ public class AdminServlet extends HttpServlet {
         }
     }
 
-    private void announceHoliday(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private void announceHoliday(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         String date = request.getParameter("date");
         String reason = request.getParameter("reason");
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("INSERT INTO holiday (date, reason) VALUES (?, ?)")) {
+                PreparedStatement stmt = conn.prepareStatement("INSERT INTO holiday (date, reason) VALUES (?, ?)")) {
 
             stmt.setString(1, date);
             stmt.setString(2, reason);
@@ -157,11 +163,13 @@ public class AdminServlet extends HttpServlet {
         }
     }
 
-    private void announceEmergencyHoliday(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private void announceEmergencyHoliday(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         String reason = request.getParameter("reason");
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("INSERT INTO holiday (date, reason) VALUES (CURRENT_DATE, ?)")) {
+                PreparedStatement stmt = conn
+                        .prepareStatement("INSERT INTO holiday (date, reason) VALUES (CURRENT_DATE, ?)")) {
 
             stmt.setString(1, "Emergency: " + reason);
             stmt.executeUpdate();
