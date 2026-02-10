@@ -4,4 +4,5 @@ face_recognition
 numpy>=1.26.0
 # Note: dlib is a dependency of face_recognition and requires cmake installed on the system
 # If installation fails, please install cmake: brew install cmake (on Mac)
-# Note: dlib is a dependency of face_recognition and requires cmake installed on the system
+pytesseract
+Pillow

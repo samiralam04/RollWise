@@ -115,15 +115,146 @@
             </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="activity-card" style="margin-bottom: 2rem;">
-            <h3>Quick Actions</h3>
-            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                <a href="live_attendance.jsp" class="btn btn-primary" style="text-decoration: none; padding: 0.75rem 1.5rem; background-color: var(--primary); color: white; border-radius: 8px; font-weight: 500;">
-                    <i class="fas fa-camera"></i> Mark Self-Attendance (AI)
-                </a>
+        <div style="display: flex; gap: 2rem; margin-bottom: 2rem; align-items: stretch;">
+            <!-- Quick Actions -->
+            <div class="activity-card" style="flex: 1; margin-bottom: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                <h3>Quick Actions</h3>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; width: 100%;">
+                    <a href="live_attendance.jsp" class="btn btn-primary" style="text-decoration: none; padding: 0.75rem 1.5rem; background-color: var(--primary); color: white; border-radius: 8px; font-weight: 500;">
+                        <i class="fas fa-camera"></i> Mark Self-Attendance (AI)
+                    </a>
+                </div>
+            </div>
+
+            <!-- Excuse Upload Section -->
+            <div class="activity-card" style="flex: 1; margin-bottom: 0;">
+                <h3>Submit Excuse Letter</h3>
+                <form id="excuseForm" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="upload">
+                    
+                    <div class="row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="flex: 1;">
+                            <label>Absence Date:</label>
+                            <input type="date" name="absence_date" required class="form-control" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                        <div style="flex: 1;">
+                            <label>Reason:</label>
+                            <select name="reason" required class="form-control" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="Medical">Medical Error/Sickness</option>
+                                <option value="Family">Family Emergency</option>
+                                <option value="Personal">Personal Issue</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <div style="flex: 1;">
+                             <label>Upload Document (Image/PDF):</label>
+                             <input type="file" name="document" accept=".jpg,.jpeg,.png,.pdf" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem; background-color: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; align-self: flex-end;">
+                            <i class="fas fa-upload"></i> Upload & Process
+                        </button>
+                    </div>
+                    <div id="excuseLoading" style="display:none; color: #666; margin-top: 10px;">Processing request...</div>
+                </form>
             </div>
         </div>
+
+        <!-- Excuse Status Section -->
+        <div class="activity-card" style="margin-bottom: 2rem;">
+            <h3>My Excuse Requests</h3>
+            <div class="table-container">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8f9fa; border-bottom: 2px solid #eee;">
+                            <th style="padding: 10px; text-align: left;">Date Applied</th>
+                            <th style="padding: 10px; text-align: left;">Absence Date</th>
+                            <th style="padding: 10px; text-align: left;">Reason</th>
+                            <th style="padding: 10px; text-align: left;">Category (AI)</th>
+                            <th style="padding: 10px; text-align: left;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="excuseTableBody">
+                        <tr><td colspan="5" style="padding: 10px; text-align: center;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <script>
+        document.getElementById('excuseForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            document.getElementById('excuseLoading').style.display = 'block';
+            
+            fetch('${pageContext.request.contextPath}/ExcuseLetterServlet', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('excuseLoading').style.display = 'none';
+                if (data.success) {
+                    alert('Excuse uploaded successfully!');
+                    loadMyExcuses(); // Refresh list
+                    this.reset();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                document.getElementById('excuseLoading').style.display = 'none';
+                console.error('Error:', error);
+                alert('An error occurred during upload.');
+            });
+        });
+
+        function loadMyExcuses() {
+            const formData = new URLSearchParams();
+            formData.append('action', 'list');
+
+            fetch('${pageContext.request.contextPath}/ExcuseLetterServlet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('excuseTableBody');
+                tbody.innerHTML = '';
+                if(data.success && data.excuses.length > 0) {
+                    data.excuses.forEach(ex => {
+                        let statusColor = '#f0ad4e'; // Pending
+                        if(ex.status === 'APPROVED') statusColor = '#5cb85c';
+                        if(ex.status === 'REJECTED') statusColor = '#d9534f';
+
+                        const row = `
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 10px;">` + ex.created_at.split(' ')[0] + `</td>
+                                <td style="padding: 10px;">` + (ex.absence_date || '-') + `</td>
+                                <td style="padding: 10px;">` + (ex.reason || '-') + `</td>
+                                <td style="padding: 10px;">` + ex.category + `</td>
+                                <td style="padding: 10px;">
+                                    <span style="background-color: ` + statusColor + `; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.85em;">
+                                        ` + ex.status + `
+                                    </span>
+                                </td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row;
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding: 10px; text-align: center;">No excuse requests found.</td></tr>';
+                }
+            })
+            .catch(err => console.error(err));
+        }
+
+        // Load on startup
+        document.addEventListener('DOMContentLoaded', loadMyExcuses);
+        </script>
 
         <!-- Attendance Section -->
         <div class="attendance-section">
@@ -160,21 +291,7 @@
         </div>
 
         <!-- Recent Activity -->
-                        <div class="activity-card">
-                            <h3>Recent Activity</h3>
-                            <div class="activity-item">
-                                <div class="activity-text">Attendance marked for today</div>
-                                <div class="activity-time">Today</div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="activity-text">New notice posted</div>
-                                <div class="activity-time">2 days ago</div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="activity-text">Monthly report generated</div>
-                                <div class="activity-time">1 week ago</div>
-                            </div>
-                        </div>
+
 
         <!-- Attendance History -->
         <div class="activity-card" style="margin-top: 2rem; margin-bottom: 2rem;">

@@ -143,6 +143,173 @@
             </div>
         </div>
 
+        <!-- Pending Excuses Review -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card p-3">
+                    <h4><i class="fas fa-envelope-open-text"></i> Pending Excuse Letters</h4>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Student ID</th>
+                                    <th>Category</th>
+                                    <th>Confidence</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <%
+                                    if (conn != null) {
+                                        try (PreparedStatement psExcuse = conn.prepareStatement(
+                                                "SELECT id, student_id, category, confidence, recommendation, extracted_text, document_path, absence_date, reason, status FROM excuse_requests WHERE status IN ('PENDING', 'HOLD') ORDER BY created_at ASC")) {
+                                            ResultSet rsExcuse = psExcuse.executeQuery();
+                                            while (rsExcuse.next()) {
+                                                int reqId = rsExcuse.getInt("id");
+                                                int studId = rsExcuse.getInt("student_id");
+                                                String cat = rsExcuse.getString("category");
+                                                String conf = rsExcuse.getString("confidence");
+                                                String rec = rsExcuse.getString("recommendation");
+                                                String text = rsExcuse.getString("extracted_text");
+                                                if (text == null) text = "";
+                                                String docPath = rsExcuse.getString("document_path");
+                                                java.sql.Date absDate = rsExcuse.getDate("absence_date");
+                                                String reason = rsExcuse.getString("reason");
+                                %>
+                                <tr>
+                                    <td><%= reqId %></td>
+                                    <td><%= studId %></td>
+                                    <td><%= cat %></td>
+                                    <td>
+                                        <span class="badge <%= "High".equals(conf) ? "bg-success" : "Medium".equals(conf) ? "bg-warning" : "bg-danger" %>">
+                                            <%= conf %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <% String status = rsExcuse.getString("status"); %>
+                                        <span class="badge <%= "HOLD".equals(status) ? "bg-warning text-dark" : "bg-secondary" %>">
+                                            <%= status %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="viewExcuse('<%= reqId %>', '<%= cat %>', '<%= rec %>', `<%= text.replace("`", "").replace("'", "\\'").replace("\n", "\\n") %>`, '<%= docPath %>', '<%= absDate != null ? absDate : "" %>', '<%= reason != null ? reason.replace("'", "\\'") : "" %>')">
+                                            Review
+                                        </button>
+                                    </td>
+                                </tr>
+                                <%
+                                            }
+                                        } catch (SQLException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Excuse Modal -->
+        <div class="modal fade" id="excuseModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Review Excuse Letter</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Student Request</h6>
+                                <p><strong>Absence Date:</strong> <span id="excuseDate"></span></p>
+                                <p><strong>Reason:</strong> <span id="excuseReason"></span></p>
+                                <hr>
+                                <h6>Extracted Text</h6>
+                                <p id="excuseText" style="white-space: pre-wrap; background: #f8f9fa; padding: 10px; border-radius: 5px; max-height: 200px; overflow-y: auto;"></p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>AI Analysis</h6>
+                                <p><strong>Category:</strong> <span id="excuseCat"></span></p>
+                                <p><strong>Recommendation:</strong> <span id="excuseRec" class="badge bg-info"></span></p>
+                                <hr>
+                                <a id="excuseDocLink" href="#" target="_blank" class="btn btn-outline-secondary btn-sm mb-3">View Original Document</a>
+                                <div>
+                                    <button class="btn btn-success w-100 mb-2" onclick="processExcuse('APPROVED')">Approve</button>
+                                    <button class="btn btn-danger w-100 mb-2" onclick="processExcuse('REJECTED')">Reject</button>
+                                    <button class="btn btn-warning w-100" onclick="processExcuse('HOLD')">Hold</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Bootstrap Bundle JS (Required for Modal) -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+        <script>
+            let currentExcuseId = null;
+            let excuseModalVar = null;
+
+            document.addEventListener('DOMContentLoaded', function() {
+                 excuseModalVar = new bootstrap.Modal(document.getElementById('excuseModal'));
+            });
+
+            function viewExcuse(id, cat, rec, text, docPath, date, reason) {
+                currentExcuseId = id;
+                document.getElementById('excuseText').textContent = text;
+                document.getElementById('excuseCat').textContent = cat;
+                document.getElementById('excuseRec').textContent = rec;
+                document.getElementById('excuseDate').textContent = date || 'N/A';
+                document.getElementById('excuseReason').textContent = reason || 'N/A';
+                document.getElementById('excuseDocLink').href = '${pageContext.request.contextPath}/uploads/excuses/' + docPath;
+                if(excuseModalVar) {
+                    excuseModalVar.show();
+                } else {
+                    console.error("Modal not initialized");
+                }
+            }
+
+            function processExcuse(status) {
+                if (!currentExcuseId) return;
+                
+                showLoading("Processing", status + " excuse request...");
+                
+                // Using URLSearchParams for form-urlencoded body
+                const params = new URLSearchParams();
+                params.append('action', 'review');
+                params.append('request_id', currentExcuseId);
+                params.append('status', status);
+                params.append('teacher_id', '<%= session.getAttribute("userId") %>');
+
+                fetch('${pageContext.request.contextPath}/ExcuseLetterServlet', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params
+                })
+                .then(response => response.json())
+                .then(data => {
+                    hideLoading();
+                    excuseModalVar.hide();
+                    if (data.success) {
+                        Swal.fire("Success", data.message, "success").then(() => location.reload());
+                    } else {
+                        Swal.fire("Error", data.message, "error");
+                    }
+                })
+                .catch(err => {
+                    hideLoading();
+                    console.error(err);
+                    Swal.fire("Error", "Request failed", "error");
+                });
+            }
+        </script>
+
         <!-- Attendance Risk Radar -->
         <div class="card p-3 mt-4">
             <h4><i class="fas fa-satellite-dish"></i> Predictive Attendance Risk Radar</h4>

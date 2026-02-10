@@ -11,6 +11,14 @@ try:
 except ImportError as e:
     print(f"Warning: AI definitions missing: {e}")
     AI_AVAILABLE = False
+
+try:
+    import pytesseract
+    from PIL import Image
+    OCR_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: OCR definitions missing: {e}")
+    OCR_AVAILABLE = False
     
 from flask import Flask, request, jsonify
 
@@ -280,6 +288,82 @@ def verify_live_student():
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+
+def classify_excuse(text):
+    """
+    Classify excuse letter based on keywords.
+    Returns: category, confidence, recommendation
+    """
+    text_lower = text.lower()
+    
+    medical_keywords = ["hospital", "doctor", "fever", "clinic", "prescription", "medical", "sick", "illness", "pain"]
+    family_keywords = ["wedding", "funeral", "emergency", "family", "death", "relative", "ceremony"]
+    
+    medical_matches = sum(1 for word in medical_keywords if word in text_lower)
+    family_matches = sum(1 for word in family_keywords if word in text_lower)
+    
+    if medical_matches > 0 and medical_matches >= family_matches:
+        category = "Medical"
+        confidence = "High" if medical_matches > 2 else "Medium"
+        recommendation = "Approve"
+    elif family_matches > 0:
+        category = "Family / Emergency"
+        confidence = "High" if family_matches > 2 else "Medium"
+        recommendation = "Approve"
+    else:
+        category = "Generic"
+        confidence = "Low"
+        recommendation = "Review"
+        
+    return category, confidence, recommendation
+
+@app.route('/process-excuse', methods=['POST'])
+def process_excuse():
+    """
+    Endpoint to process excuse letters using OCR.
+    Input: 'document' file
+    Returns: JSON with category, confidence, recommendation, extracted_text
+    """
+    if 'document' not in request.files:
+        return jsonify({"status": "error", "message": "No document uploaded"}), 400
+        
+    file = request.files['document']
+    if file.filename == '':
+        return jsonify({"status": "error", "message": "No selected file"}), 400
+        
+    if not OCR_AVAILABLE:
+        # Mock response if OCR libraries are missing
+        return jsonify({
+            "status": "success",
+            "category": "Generic",
+            "confidence": "Low",
+            "recommendation": "Review",
+            "extracted_text": "OCR Library (pytesseract/Pillow) not installed on server. Mocking response.",
+            "warning": "OCR libraries missing"
+        })
+        
+    try:
+        # Open image using PIL
+        image = Image.open(file.stream)
+        
+        # Extract text
+        extracted_text = pytesseract.image_to_string(image)
+        
+        # Classify
+        category, confidence, recommendation = classify_excuse(extracted_text)
+        
+        return jsonify({
+            "status": "success",
+            "category": category,
+            "confidence": confidence,
+            "recommendation": recommendation,
+            "extracted_text": extracted_text
+        })
+        
+    except Exception as e:
+        logging.error(f"OCR Error: {e}")
+        return jsonify({"status": "error", "message": f"Error processing document: {str(e)}"}), 500
 
 @app.route('/health', methods=['GET'])
 def health():
