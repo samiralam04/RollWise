@@ -260,6 +260,6 @@ This project is licensed under the MIT License.
 ## Contact
 
 **Developer**: Samir Alam  
-**Year**: 2026
+**Year**: 2025
 
 Feel free to reach out for suggestions, collaborations, or support.
